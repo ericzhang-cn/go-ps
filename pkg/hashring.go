@@ -6,6 +6,7 @@ import (
 	"hash/fnv"
 
 	"github.com/emirpasic/gods/maps/treemap"
+	"github.com/emirpasic/gods/sets/hashset"
 	"github.com/emirpasic/gods/utils"
 )
 
@@ -17,8 +18,9 @@ func hash(s string) uint64 {
 
 // HashRing is a consistency hash structure
 type HashRing struct {
-	nodeIds     []string
-	replicate   int
+	replicate int
+
+	nodeIds     *hashset.Set
 	hashMapping *treemap.Map
 	nodeMapping *treemap.Map
 }
@@ -28,18 +30,50 @@ func (hr *HashRing) Init(nodeIds []string, replicate int) error {
 	if replicate <= 0 {
 		return errors.New("replicate can not be zero")
 	}
-
-	hr.nodeIds = nodeIds
+	hr.nodeIds = hashset.New()
 	hr.replicate = replicate
 	hr.hashMapping = treemap.NewWith(utils.UInt64Comparator)
 	hr.nodeMapping = treemap.NewWithStringComparator()
 	for _, node := range nodeIds {
-		for i := 0; i < hr.replicate; i++ {
-			vNode := fmt.Sprintf("%d#%s", i, node)
-			hashCode := hash(vNode)
-			hr.hashMapping.Put(hashCode, vNode)
-			hr.nodeMapping.Put(vNode, node)
-		}
+		hr.AddNode(node)
 	}
 	return nil
+}
+
+// AddNode add a new server node to hash ring
+func (hr *HashRing) AddNode(node string) {
+	hr.nodeIds.Add(node)
+	for i := 0; i < hr.replicate; i++ {
+		vNode := fmt.Sprintf("%s#%d", node, i)
+		hashCode := hash(vNode)
+		hr.hashMapping.Put(hashCode, vNode)
+		hr.nodeMapping.Put(vNode, node)
+	}
+}
+
+// RemoveNode remove a server node from hash ring
+func (hr *HashRing) RemoveNode(node string) {
+	if hr.nodeIds.Contains(node) {
+		hr.nodeIds.Remove(node)
+		for i := 0; i < hr.replicate; i++ {
+			vNode := fmt.Sprintf("%s#%d", node, i)
+			hashCode := hash(vNode)
+			hr.hashMapping.Remove(hashCode)
+			hr.nodeMapping.Remove(vNode)
+		}
+	}
+}
+
+// SearchNodeForKey return server node witch store key
+func (hr *HashRing) SearchNodeForKey(key uint64) string {
+	it := hr.hashMapping.Iterator()
+	for it.Begin(); it.Next(); {
+		if key < it.Key().(uint64) {
+			node, _ := hr.nodeMapping.Get(it.Value())
+			return node.(string)
+		}
+	}
+	it.First()
+	node, _ := hr.nodeMapping.Get(it.Value())
+	return node.(string)
 }
