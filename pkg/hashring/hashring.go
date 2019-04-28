@@ -38,7 +38,7 @@ func (hr *HashRing) Init(numOfReplicate uint32) error {
 }
 
 // AddNode add a new server node to hash ring
-func (hr *HashRing) AddNode(node string) error {
+func (hr *HashRing) AddNode(node string) (err error) {
 	if hr.nodeIdentities.Contains(node) {
 		return errors.New("Server node already exists")
 	}
@@ -53,7 +53,7 @@ func (hr *HashRing) AddNode(node string) error {
 }
 
 // RemoveNode removes a server node from hash ring
-func (hr *HashRing) RemoveNode(node string) error {
+func (hr *HashRing) RemoveNode(node string) (err error) {
 	if !hr.nodeIdentities.Contains(node) {
 		return errors.New("Server node not found")
 	}
@@ -70,7 +70,7 @@ func (hr *HashRing) RemoveNode(node string) error {
 }
 
 // SearchForKey return server node that stores  key
-func (hr *HashRing) SearchForKey(key uint64) (string, error) {
+func (hr *HashRing) SearchForKey(key uint64) (nodeIndentity string, err error) {
 	if hr.nodeIdentities.Size() == 0 {
 		return "", errors.New("Empty hash ring")
 	}

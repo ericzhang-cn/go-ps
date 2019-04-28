@@ -10,7 +10,7 @@ import (
 
 // PsServer is a server node process of parameter server
 type PsServer struct {
-	c *ServerConfig
+	c *Config
 }
 
 // RangePull retrieve kv pairs of the range

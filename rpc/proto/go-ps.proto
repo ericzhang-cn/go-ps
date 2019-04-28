@@ -77,7 +77,7 @@ message RangePushResponse {
 message DuplicateRequest {
     RequestHeader header = 1;
     RangeKV kvData = 2;
-    uint32 ttl = 3;
+    uint32 duplicateCounter = 3;
 }
 
 message DuplicateResponse {

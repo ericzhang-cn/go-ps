@@ -1,12 +1,12 @@
 package server
 
-// ServerConfig is configure for server node
-type ServerConfig struct {
+// Config is configure for server node
+type Config struct {
 	port                 uint16
 	coordinatorAddresses []string
 
 	crReplicateFactor         uint8
 	crReplicateAfterAggregate bool
 
-	boltDBName string
+	badgerDir string
 }
