@@ -25,7 +25,7 @@ type HashRing struct {
 	virtualNodeToNode     *treemap.Map
 }
 
-//Init initialize HashRing with number of replicate
+//Init initializes HashRing with number of replicate
 func (hr *HashRing) Init(numOfReplicate uint32) error {
 	if numOfReplicate == 0 {
 		return errors.New("replicate can not be zero")
@@ -52,7 +52,7 @@ func (hr *HashRing) AddNode(node string) error {
 	return nil
 }
 
-// RemoveNode remove a server node from hash ring
+// RemoveNode removes a server node from hash ring
 func (hr *HashRing) RemoveNode(node string) error {
 	if !hr.nodeIdentities.Contains(node) {
 		return errors.New("Server node not found")
@@ -69,7 +69,7 @@ func (hr *HashRing) RemoveNode(node string) error {
 	return nil
 }
 
-// SearchForKey return server node stores key
+// SearchForKey return server node that stores  key
 func (hr *HashRing) SearchForKey(key uint64) (string, error) {
 	if hr.nodeIdentities.Size() == 0 {
 		return "", errors.New("Empty hash ring")
