@@ -62,12 +62,12 @@ message RangePullRequest {
 
 message RangePullResponse {
     ResponseHeader header = 1;
-    RangeKV data = 2;
+    RangeKV kvData = 2;
 }
 
 message RangePushRequest {
     RequestHeader header = 1;
-    RangeKV data = 2;
+    RangeKV kvData = 2;
 }
 
 message RangePushResponse {
@@ -76,19 +76,20 @@ message RangePushResponse {
 
 message DuplicateRequest {
     RequestHeader header = 1;
-    RangeKV data = 2;
+    RangeKV kvData = 2;
+    uint32 ttl = 3;
 }
 
 message DuplicateResponse {
     ResponseHeader header = 1;
 }
 
-service ServerService {
+service PsServer {
     rpc RangePull(RangePullRequest) returns (RangePullResponse) {}
     rpc RangePush(RangePushRequest) returns (RangePushResponse) {}
     rpc Duplicate(DuplicateRequest) returns (DuplicateResponse) {}
 }
 
-service WorkerService {}
+service PsWorker {}
 
-service CoordinatorService {}
+service Coordinator {}
