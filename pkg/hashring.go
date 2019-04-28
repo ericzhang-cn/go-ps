@@ -16,64 +16,72 @@ func hash(s string) uint64 {
 	return h.Sum64()
 }
 
-// HashRing is a consistency hash structure
+// HashRing is internal data structure of consistency hash ring
 type HashRing struct {
-	replicate int
+	numOfReplicate uint32
 
-	nodeIds     *hashset.Set
-	hashMapping *treemap.Map
-	nodeMapping *treemap.Map
+	nodeIdentities        *hashset.Set
+	hashCodeToVirtualNode *treemap.Map
+	virtualNodeToNode     *treemap.Map
 }
 
-//Init initialize HashRing with physical node ids and replicate
-func (hr *HashRing) Init(nodeIds []string, replicate int) error {
-	if replicate <= 0 {
+//Init initialize HashRing with number of replicate
+func (hr *HashRing) Init(numOfReplicate uint32) error {
+	if numOfReplicate == 0 {
 		return errors.New("replicate can not be zero")
 	}
-	hr.nodeIds = hashset.New()
-	hr.replicate = replicate
-	hr.hashMapping = treemap.NewWith(utils.UInt64Comparator)
-	hr.nodeMapping = treemap.NewWithStringComparator()
-	for _, node := range nodeIds {
-		hr.AddNode(node)
-	}
+	hr.nodeIdentities = hashset.New()
+	hr.numOfReplicate = numOfReplicate
+	hr.hashCodeToVirtualNode = treemap.NewWith(utils.UInt64Comparator)
+	hr.virtualNodeToNode = treemap.NewWith(utils.StringComparator)
 	return nil
 }
 
 // AddNode add a new server node to hash ring
-func (hr *HashRing) AddNode(node string) {
-	hr.nodeIds.Add(node)
-	for i := 0; i < hr.replicate; i++ {
+func (hr *HashRing) AddNode(node string) error {
+	if hr.nodeIdentities.Contains(node) {
+		return errors.New("Server node already exists")
+	}
+	hr.nodeIdentities.Add(node)
+	for i := uint32(0); i < hr.numOfReplicate; i++ {
 		vNode := fmt.Sprintf("%s#%d", node, i)
 		hashCode := hash(vNode)
-		hr.hashMapping.Put(hashCode, vNode)
-		hr.nodeMapping.Put(vNode, node)
+		hr.hashCodeToVirtualNode.Put(hashCode, vNode)
+		hr.virtualNodeToNode.Put(vNode, node)
 	}
+	return nil
 }
 
 // RemoveNode remove a server node from hash ring
-func (hr *HashRing) RemoveNode(node string) {
-	if hr.nodeIds.Contains(node) {
-		hr.nodeIds.Remove(node)
-		for i := 0; i < hr.replicate; i++ {
+func (hr *HashRing) RemoveNode(node string) error {
+	if !hr.nodeIdentities.Contains(node) {
+		return errors.New("Server node not found")
+	}
+	if hr.nodeIdentities.Contains(node) {
+		hr.nodeIdentities.Remove(node)
+		for i := uint32(0); i < hr.numOfReplicate; i++ {
 			vNode := fmt.Sprintf("%s#%d", node, i)
 			hashCode := hash(vNode)
-			hr.hashMapping.Remove(hashCode)
-			hr.nodeMapping.Remove(vNode)
+			hr.hashCodeToVirtualNode.Remove(hashCode)
+			hr.virtualNodeToNode.Remove(vNode)
 		}
 	}
+	return nil
 }
 
-// SearchNodeForKey return server node witch store key
-func (hr *HashRing) SearchNodeForKey(key uint64) string {
-	it := hr.hashMapping.Iterator()
+// SearchForKey return server node stores key
+func (hr *HashRing) SearchForKey(key uint64) (string, error) {
+	if hr.nodeIdentities.Size() == 0 {
+		return "", errors.New("Empty hash ring")
+	}
+	it := hr.hashCodeToVirtualNode.Iterator()
 	for it.Begin(); it.Next(); {
 		if key < it.Key().(uint64) {
-			node, _ := hr.nodeMapping.Get(it.Value())
-			return node.(string)
+			node, _ := hr.virtualNodeToNode.Get(it.Value())
+			return node.(string), nil
 		}
 	}
 	it.First()
-	node, _ := hr.nodeMapping.Get(it.Value())
-	return node.(string)
+	node, _ := hr.virtualNodeToNode.Get(it.Value())
+	return node.(string), nil
 }

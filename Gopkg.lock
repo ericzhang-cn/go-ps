@@ -2,12 +2,14 @@
 
 
 [[projects]]
-  digest = "1:68355419a4217ff45b6e3b2a7db22f8a8d75ffd5f0d456edcf6148d55e78c4b2"
+  digest = "1:59aedc3aa7a44ea60159a2c92869efb60afe77871c084d7787ac77a8a172d427"
   name = "github.com/emirpasic/gods"
   packages = [
     "containers",
     "maps",
     "maps/treemap",
+    "sets",
+    "sets/hashset",
     "trees",
     "trees/redblacktree",
     "utils",
@@ -29,6 +31,7 @@
   analyzer-version = 1
   input-imports = [
     "github.com/emirpasic/gods/maps/treemap",
+    "github.com/emirpasic/gods/sets/hashset",
     "github.com/emirpasic/gods/utils",
     "github.com/urfave/cli",
   ]
