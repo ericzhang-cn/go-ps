@@ -3,8 +3,92 @@ syntax = "proto3";
 package rpc;
 
 import "google/protobuf/any.proto";
+import "google/protobuf/timestamp.proto";
 
 message KV {
     uint64 key = 1;
     google.protobuf.Any value = 2;
+    uint32 version = 3;
 }
+
+message Range {
+    uint64 begin = 1;
+    uint64 end = 2;
+}
+
+message RangeKV {
+    Range range = 1;
+    repeated KV kvs = 2;
+}
+
+message RequestHeader {
+    uint32 src_node_rank = 1;
+    uint32 dest_node_rank = 2;
+    google.protobuf.Timestamp ts = 3;
+    enum RequestType {
+        NOT_USED = 0x000;
+        PING = 0x100;
+        RANGE_PULL = 0x101;
+        RANGE_PUSH = 0x102;
+        REPLICATE = 0x103;
+    }
+    RequestType type = 4;
+}
+
+message ResponseHeader {
+    uint32 src_node_rank = 1;
+    uint32 dest_node_rank = 2;
+    google.protobuf.Timestamp ts = 3;
+    enum ResponseType {
+        NOT_USED = 0x000;
+        ACK_PING = 0x200;
+        ACK_RANGE_PULL = 0x201;
+        ACK_RANGE_PUSH = 0x202;
+        ACK_REPLICATE = 0x203;
+    }
+    ResponseType type = 4;
+    enum Status {
+        OK = 0x00;
+        ERROR = 0x01;
+    }
+    Status status = 5;
+    string error_msg = 6;
+}
+
+message RangePullRequest {
+    RequestHeader header = 1;
+    Range range = 2;
+}
+
+message RangePullResponse {
+    ResponseHeader header = 1;
+    RangeKV data = 2;
+}
+
+message RangePushRequest {
+    RequestHeader header = 1;
+    RangeKV data = 2;
+}
+
+message RangePushResponse {
+    ResponseHeader header = 1;
+}
+
+message DuplicateRequest {
+    RequestHeader header = 1;
+    RangeKV data = 2;
+}
+
+message DuplicateResponse {
+    ResponseHeader header = 1;
+}
+
+service ServerService {
+    rpc RangePull(RangePullRequest) returns (RangePullResponse) {}
+    rpc RangePush(RangePushRequest) returns (RangePushResponse) {}
+    rpc Duplicate(DuplicateRequest) returns (DuplicateResponse) {}
+}
+
+service WorkerService {}
+
+service CoordinatorService {}

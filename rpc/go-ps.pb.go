@@ -7,6 +7,7 @@ import (
 	fmt "fmt"
 	proto "github.com/golang/protobuf/proto"
 	any "github.com/golang/protobuf/ptypes/any"
+	timestamp "github.com/golang/protobuf/ptypes/timestamp"
 	math "math"
 )
 
@@ -21,9 +22,103 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type RequestHeader_RequestType int32
+
+const (
+	RequestHeader_NOT_USED   RequestHeader_RequestType = 0
+	RequestHeader_PING       RequestHeader_RequestType = 256
+	RequestHeader_RANGE_PULL RequestHeader_RequestType = 257
+	RequestHeader_RANGE_PUSH RequestHeader_RequestType = 258
+	RequestHeader_REPLICATE  RequestHeader_RequestType = 259
+)
+
+var RequestHeader_RequestType_name = map[int32]string{
+	0:   "NOT_USED",
+	256: "PING",
+	257: "RANGE_PULL",
+	258: "RANGE_PUSH",
+	259: "REPLICATE",
+}
+
+var RequestHeader_RequestType_value = map[string]int32{
+	"NOT_USED":   0,
+	"PING":       256,
+	"RANGE_PULL": 257,
+	"RANGE_PUSH": 258,
+	"REPLICATE":  259,
+}
+
+func (x RequestHeader_RequestType) String() string {
+	return proto.EnumName(RequestHeader_RequestType_name, int32(x))
+}
+
+func (RequestHeader_RequestType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{3, 0}
+}
+
+type ResponseHeader_ResponseType int32
+
+const (
+	ResponseHeader_NOT_USED       ResponseHeader_ResponseType = 0
+	ResponseHeader_ACK_PING       ResponseHeader_ResponseType = 512
+	ResponseHeader_ACK_RANGE_PULL ResponseHeader_ResponseType = 513
+	ResponseHeader_ACK_RANGE_PUSH ResponseHeader_ResponseType = 514
+	ResponseHeader_ACK_REPLICATE  ResponseHeader_ResponseType = 515
+)
+
+var ResponseHeader_ResponseType_name = map[int32]string{
+	0:   "NOT_USED",
+	512: "ACK_PING",
+	513: "ACK_RANGE_PULL",
+	514: "ACK_RANGE_PUSH",
+	515: "ACK_REPLICATE",
+}
+
+var ResponseHeader_ResponseType_value = map[string]int32{
+	"NOT_USED":       0,
+	"ACK_PING":       512,
+	"ACK_RANGE_PULL": 513,
+	"ACK_RANGE_PUSH": 514,
+	"ACK_REPLICATE":  515,
+}
+
+func (x ResponseHeader_ResponseType) String() string {
+	return proto.EnumName(ResponseHeader_ResponseType_name, int32(x))
+}
+
+func (ResponseHeader_ResponseType) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{4, 0}
+}
+
+type ResponseHeader_Status int32
+
+const (
+	ResponseHeader_OK    ResponseHeader_Status = 0
+	ResponseHeader_ERROR ResponseHeader_Status = 1
+)
+
+var ResponseHeader_Status_name = map[int32]string{
+	0: "OK",
+	1: "ERROR",
+}
+
+var ResponseHeader_Status_value = map[string]int32{
+	"OK":    0,
+	"ERROR": 1,
+}
+
+func (x ResponseHeader_Status) String() string {
+	return proto.EnumName(ResponseHeader_Status_name, int32(x))
+}
+
+func (ResponseHeader_Status) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{4, 1}
+}
+
 type KV struct {
 	Key                  uint64   `protobuf:"varint,1,opt,name=key,proto3" json:"key,omitempty"`
 	Value                *any.Any `protobuf:"bytes,2,opt,name=value,proto3" json:"value,omitempty"`
+	Version              uint32   `protobuf:"varint,3,opt,name=version,proto3" json:"version,omitempty"`
 	XXX_NoUnkeyedLiteral struct{} `json:"-"`
 	XXX_unrecognized     []byte   `json:"-"`
 	XXX_sizecache        int32    `json:"-"`
@@ -68,20 +163,578 @@ func (m *KV) GetValue() *any.Any {
 	return nil
 }
 
+func (m *KV) GetVersion() uint32 {
+	if m != nil {
+		return m.Version
+	}
+	return 0
+}
+
+type Range struct {
+	Begin                uint64   `protobuf:"varint,1,opt,name=begin,proto3" json:"begin,omitempty"`
+	End                  uint64   `protobuf:"varint,2,opt,name=end,proto3" json:"end,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Range) Reset()         { *m = Range{} }
+func (m *Range) String() string { return proto.CompactTextString(m) }
+func (*Range) ProtoMessage()    {}
+func (*Range) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{1}
+}
+
+func (m *Range) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Range.Unmarshal(m, b)
+}
+func (m *Range) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Range.Marshal(b, m, deterministic)
+}
+func (m *Range) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Range.Merge(m, src)
+}
+func (m *Range) XXX_Size() int {
+	return xxx_messageInfo_Range.Size(m)
+}
+func (m *Range) XXX_DiscardUnknown() {
+	xxx_messageInfo_Range.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Range proto.InternalMessageInfo
+
+func (m *Range) GetBegin() uint64 {
+	if m != nil {
+		return m.Begin
+	}
+	return 0
+}
+
+func (m *Range) GetEnd() uint64 {
+	if m != nil {
+		return m.End
+	}
+	return 0
+}
+
+type RangeKV struct {
+	Range                *Range   `protobuf:"bytes,1,opt,name=range,proto3" json:"range,omitempty"`
+	Kvs                  []*KV    `protobuf:"bytes,2,rep,name=kvs,proto3" json:"kvs,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *RangeKV) Reset()         { *m = RangeKV{} }
+func (m *RangeKV) String() string { return proto.CompactTextString(m) }
+func (*RangeKV) ProtoMessage()    {}
+func (*RangeKV) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{2}
+}
+
+func (m *RangeKV) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RangeKV.Unmarshal(m, b)
+}
+func (m *RangeKV) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RangeKV.Marshal(b, m, deterministic)
+}
+func (m *RangeKV) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RangeKV.Merge(m, src)
+}
+func (m *RangeKV) XXX_Size() int {
+	return xxx_messageInfo_RangeKV.Size(m)
+}
+func (m *RangeKV) XXX_DiscardUnknown() {
+	xxx_messageInfo_RangeKV.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RangeKV proto.InternalMessageInfo
+
+func (m *RangeKV) GetRange() *Range {
+	if m != nil {
+		return m.Range
+	}
+	return nil
+}
+
+func (m *RangeKV) GetKvs() []*KV {
+	if m != nil {
+		return m.Kvs
+	}
+	return nil
+}
+
+type RequestHeader struct {
+	SrcNodeRank          uint32                    `protobuf:"varint,1,opt,name=src_node_rank,json=srcNodeRank,proto3" json:"src_node_rank,omitempty"`
+	DestNodeRank         uint32                    `protobuf:"varint,2,opt,name=dest_node_rank,json=destNodeRank,proto3" json:"dest_node_rank,omitempty"`
+	Ts                   *timestamp.Timestamp      `protobuf:"bytes,3,opt,name=ts,proto3" json:"ts,omitempty"`
+	Type                 RequestHeader_RequestType `protobuf:"varint,4,opt,name=type,proto3,enum=rpc.RequestHeader_RequestType" json:"type,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                  `json:"-"`
+	XXX_unrecognized     []byte                    `json:"-"`
+	XXX_sizecache        int32                     `json:"-"`
+}
+
+func (m *RequestHeader) Reset()         { *m = RequestHeader{} }
+func (m *RequestHeader) String() string { return proto.CompactTextString(m) }
+func (*RequestHeader) ProtoMessage()    {}
+func (*RequestHeader) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{3}
+}
+
+func (m *RequestHeader) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RequestHeader.Unmarshal(m, b)
+}
+func (m *RequestHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RequestHeader.Marshal(b, m, deterministic)
+}
+func (m *RequestHeader) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RequestHeader.Merge(m, src)
+}
+func (m *RequestHeader) XXX_Size() int {
+	return xxx_messageInfo_RequestHeader.Size(m)
+}
+func (m *RequestHeader) XXX_DiscardUnknown() {
+	xxx_messageInfo_RequestHeader.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RequestHeader proto.InternalMessageInfo
+
+func (m *RequestHeader) GetSrcNodeRank() uint32 {
+	if m != nil {
+		return m.SrcNodeRank
+	}
+	return 0
+}
+
+func (m *RequestHeader) GetDestNodeRank() uint32 {
+	if m != nil {
+		return m.DestNodeRank
+	}
+	return 0
+}
+
+func (m *RequestHeader) GetTs() *timestamp.Timestamp {
+	if m != nil {
+		return m.Ts
+	}
+	return nil
+}
+
+func (m *RequestHeader) GetType() RequestHeader_RequestType {
+	if m != nil {
+		return m.Type
+	}
+	return RequestHeader_NOT_USED
+}
+
+type ResponseHeader struct {
+	SrcNodeRank          uint32                      `protobuf:"varint,1,opt,name=src_node_rank,json=srcNodeRank,proto3" json:"src_node_rank,omitempty"`
+	DestNodeRank         uint32                      `protobuf:"varint,2,opt,name=dest_node_rank,json=destNodeRank,proto3" json:"dest_node_rank,omitempty"`
+	Ts                   *timestamp.Timestamp        `protobuf:"bytes,3,opt,name=ts,proto3" json:"ts,omitempty"`
+	Type                 ResponseHeader_ResponseType `protobuf:"varint,4,opt,name=type,proto3,enum=rpc.ResponseHeader_ResponseType" json:"type,omitempty"`
+	Status               ResponseHeader_Status       `protobuf:"varint,5,opt,name=status,proto3,enum=rpc.ResponseHeader_Status" json:"status,omitempty"`
+	ErrorMsg             string                      `protobuf:"bytes,6,opt,name=error_msg,json=errorMsg,proto3" json:"error_msg,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}                    `json:"-"`
+	XXX_unrecognized     []byte                      `json:"-"`
+	XXX_sizecache        int32                       `json:"-"`
+}
+
+func (m *ResponseHeader) Reset()         { *m = ResponseHeader{} }
+func (m *ResponseHeader) String() string { return proto.CompactTextString(m) }
+func (*ResponseHeader) ProtoMessage()    {}
+func (*ResponseHeader) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{4}
+}
+
+func (m *ResponseHeader) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_ResponseHeader.Unmarshal(m, b)
+}
+func (m *ResponseHeader) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_ResponseHeader.Marshal(b, m, deterministic)
+}
+func (m *ResponseHeader) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_ResponseHeader.Merge(m, src)
+}
+func (m *ResponseHeader) XXX_Size() int {
+	return xxx_messageInfo_ResponseHeader.Size(m)
+}
+func (m *ResponseHeader) XXX_DiscardUnknown() {
+	xxx_messageInfo_ResponseHeader.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_ResponseHeader proto.InternalMessageInfo
+
+func (m *ResponseHeader) GetSrcNodeRank() uint32 {
+	if m != nil {
+		return m.SrcNodeRank
+	}
+	return 0
+}
+
+func (m *ResponseHeader) GetDestNodeRank() uint32 {
+	if m != nil {
+		return m.DestNodeRank
+	}
+	return 0
+}
+
+func (m *ResponseHeader) GetTs() *timestamp.Timestamp {
+	if m != nil {
+		return m.Ts
+	}
+	return nil
+}
+
+func (m *ResponseHeader) GetType() ResponseHeader_ResponseType {
+	if m != nil {
+		return m.Type
+	}
+	return ResponseHeader_NOT_USED
+}
+
+func (m *ResponseHeader) GetStatus() ResponseHeader_Status {
+	if m != nil {
+		return m.Status
+	}
+	return ResponseHeader_OK
+}
+
+func (m *ResponseHeader) GetErrorMsg() string {
+	if m != nil {
+		return m.ErrorMsg
+	}
+	return ""
+}
+
+type RangePullRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Range                *Range         `protobuf:"bytes,2,opt,name=range,proto3" json:"range,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *RangePullRequest) Reset()         { *m = RangePullRequest{} }
+func (m *RangePullRequest) String() string { return proto.CompactTextString(m) }
+func (*RangePullRequest) ProtoMessage()    {}
+func (*RangePullRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{5}
+}
+
+func (m *RangePullRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RangePullRequest.Unmarshal(m, b)
+}
+func (m *RangePullRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RangePullRequest.Marshal(b, m, deterministic)
+}
+func (m *RangePullRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RangePullRequest.Merge(m, src)
+}
+func (m *RangePullRequest) XXX_Size() int {
+	return xxx_messageInfo_RangePullRequest.Size(m)
+}
+func (m *RangePullRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RangePullRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RangePullRequest proto.InternalMessageInfo
+
+func (m *RangePullRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *RangePullRequest) GetRange() *Range {
+	if m != nil {
+		return m.Range
+	}
+	return nil
+}
+
+type RangePullResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Data                 *RangeKV        `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *RangePullResponse) Reset()         { *m = RangePullResponse{} }
+func (m *RangePullResponse) String() string { return proto.CompactTextString(m) }
+func (*RangePullResponse) ProtoMessage()    {}
+func (*RangePullResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{6}
+}
+
+func (m *RangePullResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RangePullResponse.Unmarshal(m, b)
+}
+func (m *RangePullResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RangePullResponse.Marshal(b, m, deterministic)
+}
+func (m *RangePullResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RangePullResponse.Merge(m, src)
+}
+func (m *RangePullResponse) XXX_Size() int {
+	return xxx_messageInfo_RangePullResponse.Size(m)
+}
+func (m *RangePullResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RangePullResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RangePullResponse proto.InternalMessageInfo
+
+func (m *RangePullResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *RangePullResponse) GetData() *RangeKV {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type RangePushRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Data                 *RangeKV       `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *RangePushRequest) Reset()         { *m = RangePushRequest{} }
+func (m *RangePushRequest) String() string { return proto.CompactTextString(m) }
+func (*RangePushRequest) ProtoMessage()    {}
+func (*RangePushRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{7}
+}
+
+func (m *RangePushRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RangePushRequest.Unmarshal(m, b)
+}
+func (m *RangePushRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RangePushRequest.Marshal(b, m, deterministic)
+}
+func (m *RangePushRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RangePushRequest.Merge(m, src)
+}
+func (m *RangePushRequest) XXX_Size() int {
+	return xxx_messageInfo_RangePushRequest.Size(m)
+}
+func (m *RangePushRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RangePushRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RangePushRequest proto.InternalMessageInfo
+
+func (m *RangePushRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *RangePushRequest) GetData() *RangeKV {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type RangePushResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *RangePushResponse) Reset()         { *m = RangePushResponse{} }
+func (m *RangePushResponse) String() string { return proto.CompactTextString(m) }
+func (*RangePushResponse) ProtoMessage()    {}
+func (*RangePushResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{8}
+}
+
+func (m *RangePushResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RangePushResponse.Unmarshal(m, b)
+}
+func (m *RangePushResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RangePushResponse.Marshal(b, m, deterministic)
+}
+func (m *RangePushResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RangePushResponse.Merge(m, src)
+}
+func (m *RangePushResponse) XXX_Size() int {
+	return xxx_messageInfo_RangePushResponse.Size(m)
+}
+func (m *RangePushResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RangePushResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RangePushResponse proto.InternalMessageInfo
+
+func (m *RangePushResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+type DuplicateRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Data                 *RangeKV       `protobuf:"bytes,2,opt,name=data,proto3" json:"data,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *DuplicateRequest) Reset()         { *m = DuplicateRequest{} }
+func (m *DuplicateRequest) String() string { return proto.CompactTextString(m) }
+func (*DuplicateRequest) ProtoMessage()    {}
+func (*DuplicateRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{9}
+}
+
+func (m *DuplicateRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DuplicateRequest.Unmarshal(m, b)
+}
+func (m *DuplicateRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DuplicateRequest.Marshal(b, m, deterministic)
+}
+func (m *DuplicateRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DuplicateRequest.Merge(m, src)
+}
+func (m *DuplicateRequest) XXX_Size() int {
+	return xxx_messageInfo_DuplicateRequest.Size(m)
+}
+func (m *DuplicateRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_DuplicateRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DuplicateRequest proto.InternalMessageInfo
+
+func (m *DuplicateRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *DuplicateRequest) GetData() *RangeKV {
+	if m != nil {
+		return m.Data
+	}
+	return nil
+}
+
+type DuplicateResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *DuplicateResponse) Reset()         { *m = DuplicateResponse{} }
+func (m *DuplicateResponse) String() string { return proto.CompactTextString(m) }
+func (*DuplicateResponse) ProtoMessage()    {}
+func (*DuplicateResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{10}
+}
+
+func (m *DuplicateResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_DuplicateResponse.Unmarshal(m, b)
+}
+func (m *DuplicateResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_DuplicateResponse.Marshal(b, m, deterministic)
+}
+func (m *DuplicateResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_DuplicateResponse.Merge(m, src)
+}
+func (m *DuplicateResponse) XXX_Size() int {
+	return xxx_messageInfo_DuplicateResponse.Size(m)
+}
+func (m *DuplicateResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_DuplicateResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_DuplicateResponse proto.InternalMessageInfo
+
+func (m *DuplicateResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterEnum("rpc.RequestHeader_RequestType", RequestHeader_RequestType_name, RequestHeader_RequestType_value)
+	proto.RegisterEnum("rpc.ResponseHeader_ResponseType", ResponseHeader_ResponseType_name, ResponseHeader_ResponseType_value)
+	proto.RegisterEnum("rpc.ResponseHeader_Status", ResponseHeader_Status_name, ResponseHeader_Status_value)
 	proto.RegisterType((*KV)(nil), "rpc.KV")
+	proto.RegisterType((*Range)(nil), "rpc.Range")
+	proto.RegisterType((*RangeKV)(nil), "rpc.RangeKV")
+	proto.RegisterType((*RequestHeader)(nil), "rpc.RequestHeader")
+	proto.RegisterType((*ResponseHeader)(nil), "rpc.ResponseHeader")
+	proto.RegisterType((*RangePullRequest)(nil), "rpc.RangePullRequest")
+	proto.RegisterType((*RangePullResponse)(nil), "rpc.RangePullResponse")
+	proto.RegisterType((*RangePushRequest)(nil), "rpc.RangePushRequest")
+	proto.RegisterType((*RangePushResponse)(nil), "rpc.RangePushResponse")
+	proto.RegisterType((*DuplicateRequest)(nil), "rpc.DuplicateRequest")
+	proto.RegisterType((*DuplicateResponse)(nil), "rpc.DuplicateResponse")
 }
 
 func init() { proto.RegisterFile("go-ps.proto", fileDescriptor_bc169dcd4c07eef6) }
 
 var fileDescriptor_bc169dcd4c07eef6 = []byte{
-	// 119 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0xe2, 0x4e, 0xcf, 0xd7, 0x2d,
-	0x28, 0xd6, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0x62, 0x2e, 0x2a, 0x48, 0x96, 0x92, 0x4c, 0xcf,
-	0xcf, 0x4f, 0xcf, 0x49, 0xd5, 0x07, 0x0b, 0x25, 0x95, 0xa6, 0xe9, 0x27, 0xe6, 0x55, 0x42, 0xe4,
-	0x95, 0x9c, 0xb8, 0x98, 0xbc, 0xc3, 0x84, 0x04, 0xb8, 0x98, 0xb3, 0x53, 0x2b, 0x25, 0x18, 0x15,
-	0x18, 0x35, 0x58, 0x82, 0x40, 0x4c, 0x21, 0x2d, 0x2e, 0xd6, 0xb2, 0xc4, 0x9c, 0xd2, 0x54, 0x09,
-	0x26, 0x05, 0x46, 0x0d, 0x6e, 0x23, 0x11, 0x3d, 0x88, 0x11, 0x7a, 0x30, 0x23, 0xf4, 0x1c, 0xf3,
-	0x2a, 0x83, 0x20, 0x4a, 0x92, 0xd8, 0xc0, 0x82, 0xc6, 0x80, 0x00, 0x00, 0x00, 0xff, 0xff, 0xe9,
-	0xf3, 0x67, 0xa5, 0x79, 0x00, 0x00, 0x00,
+	// 701 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x54, 0x5d, 0x6f, 0xda, 0x30,
+	0x14, 0x6d, 0x42, 0xa0, 0xe5, 0x42, 0x68, 0xe6, 0x76, 0x53, 0x4a, 0xa5, 0x2d, 0x8a, 0xf6, 0x80,
+	0x3a, 0x8d, 0x4a, 0xd9, 0x1e, 0xf7, 0x30, 0xd4, 0xb2, 0xb6, 0xa2, 0xa3, 0xc8, 0x50, 0xb6, 0x87,
+	0x49, 0x2c, 0x10, 0x2f, 0x8d, 0xa0, 0x71, 0x66, 0x07, 0x24, 0xde, 0xf6, 0xf1, 0x13, 0xa6, 0xfd,
+	0xa8, 0xfd, 0xab, 0x29, 0x4e, 0x08, 0x01, 0x3a, 0x4d, 0xaa, 0x34, 0xed, 0x05, 0xd9, 0xe7, 0xde,
+	0xe3, 0x73, 0xcf, 0xb1, 0x03, 0x94, 0x5c, 0xfa, 0x3c, 0xe0, 0xf5, 0x80, 0xd1, 0x90, 0xa2, 0x1c,
+	0x0b, 0x46, 0xd5, 0x03, 0x97, 0x52, 0x77, 0x42, 0x8e, 0x05, 0x34, 0x9c, 0x7e, 0x3a, 0xb6, 0xfd,
+	0x79, 0x5c, 0xaf, 0x3e, 0x59, 0x2f, 0x85, 0xde, 0x2d, 0xe1, 0xa1, 0x7d, 0x1b, 0xc4, 0x0d, 0xe6,
+	0x07, 0x90, 0x5b, 0x7d, 0xa4, 0x41, 0x6e, 0x4c, 0xe6, 0xba, 0x64, 0x48, 0x35, 0x05, 0x47, 0x4b,
+	0x74, 0x04, 0xf9, 0x99, 0x3d, 0x99, 0x12, 0x5d, 0x36, 0xa4, 0x5a, 0xc9, 0xda, 0xaf, 0xc7, 0x07,
+	0xd5, 0x17, 0x07, 0xd5, 0x1b, 0xfe, 0x1c, 0xc7, 0x2d, 0x48, 0x87, 0xed, 0x19, 0x61, 0xdc, 0xa3,
+	0xbe, 0x9e, 0x33, 0xa4, 0x9a, 0x8a, 0x17, 0x5b, 0xf3, 0x18, 0xf2, 0xd8, 0xf6, 0x5d, 0x82, 0xf6,
+	0x21, 0x3f, 0x24, 0xae, 0xe7, 0x27, 0x12, 0xf1, 0x26, 0x92, 0x25, 0xbe, 0x23, 0x24, 0x14, 0x1c,
+	0x2d, 0xcd, 0x37, 0xb0, 0x2d, 0x08, 0xad, 0x3e, 0x32, 0x20, 0xcf, 0xa2, 0xa5, 0xa0, 0x94, 0x2c,
+	0xa8, 0xb3, 0x60, 0x54, 0x17, 0x45, 0x1c, 0x17, 0xd0, 0x01, 0xe4, 0xc6, 0x33, 0xae, 0xcb, 0x46,
+	0xae, 0x56, 0xb2, 0xb6, 0x45, 0xbd, 0xd5, 0xc7, 0x11, 0x66, 0xfe, 0x90, 0x41, 0xc5, 0xe4, 0xf3,
+	0x94, 0xf0, 0xf0, 0x9c, 0xd8, 0x0e, 0x61, 0xc8, 0x04, 0x95, 0xb3, 0xd1, 0xc0, 0xa7, 0x0e, 0x19,
+	0x30, 0xdb, 0x1f, 0x8b, 0x63, 0x55, 0x5c, 0xe2, 0x6c, 0xd4, 0xa6, 0x0e, 0xc1, 0xb6, 0x3f, 0x46,
+	0x4f, 0xa1, 0xe2, 0x10, 0x1e, 0x66, 0x9a, 0x64, 0xd1, 0x54, 0x8e, 0xd0, 0xb4, 0xeb, 0x08, 0xe4,
+	0x90, 0x0b, 0xa7, 0x25, 0xab, 0xba, 0x91, 0x4b, 0x6f, 0x11, 0x30, 0x96, 0x43, 0x8e, 0x2c, 0x50,
+	0xc2, 0x79, 0x40, 0x74, 0xc5, 0x90, 0x6a, 0x15, 0xeb, 0x71, 0xec, 0x21, 0x3b, 0xd7, 0x62, 0xd7,
+	0x9b, 0x07, 0x04, 0x8b, 0x5e, 0xf3, 0x3d, 0x94, 0x32, 0x20, 0x2a, 0xc3, 0x4e, 0xfb, 0xaa, 0x37,
+	0xb8, 0xee, 0x36, 0x4f, 0xb5, 0x2d, 0x54, 0x04, 0xa5, 0x73, 0xd1, 0x3e, 0xd3, 0xbe, 0xc8, 0x68,
+	0x17, 0x00, 0x37, 0xda, 0x67, 0xcd, 0x41, 0xe7, 0xfa, 0xf2, 0x52, 0xfb, 0xba, 0x02, 0x74, 0xcf,
+	0xb5, 0x6f, 0x32, 0xaa, 0x40, 0x11, 0x37, 0x3b, 0x97, 0x17, 0x27, 0x8d, 0x5e, 0x53, 0xfb, 0x2e,
+	0x9b, 0x3f, 0x73, 0x50, 0xc1, 0x84, 0x07, 0xd4, 0xe7, 0xe4, 0xbf, 0xc6, 0xf2, 0x72, 0x25, 0x16,
+	0x23, 0x89, 0x25, 0x3b, 0x58, 0xba, 0x5d, 0x06, 0x83, 0x2c, 0x28, 0xf0, 0xd0, 0x0e, 0xa7, 0x5c,
+	0xcf, 0x0b, 0x5e, 0xf5, 0x2e, 0x5e, 0x57, 0x74, 0xe0, 0xa4, 0x13, 0x1d, 0x42, 0x91, 0x30, 0x46,
+	0xd9, 0xe0, 0x96, 0xbb, 0x7a, 0xc1, 0x90, 0x6a, 0x45, 0xbc, 0x23, 0x80, 0xb7, 0xdc, 0x35, 0x3d,
+	0x28, 0x67, 0x65, 0xd6, 0xa2, 0x56, 0x61, 0xa7, 0x71, 0xd2, 0x1a, 0xc4, 0x71, 0x2b, 0x68, 0x0f,
+	0x2a, 0xd1, 0x36, 0x1b, 0xf9, 0x06, 0x18, 0xc5, 0xae, 0x20, 0x04, 0xaa, 0x00, 0x97, 0xd1, 0x2b,
+	0xe6, 0x21, 0x14, 0xe2, 0xc9, 0x50, 0x01, 0xe4, 0xab, 0x96, 0xb8, 0xc9, 0x7c, 0x13, 0xe3, 0x2b,
+	0xac, 0x49, 0xe6, 0x47, 0xd0, 0xc4, 0xc3, 0xee, 0x4c, 0x27, 0x93, 0xe4, 0xea, 0xd1, 0x11, 0x14,
+	0x6e, 0x84, 0xa3, 0xe4, 0xfd, 0xa3, 0xcd, 0xb7, 0x83, 0x93, 0x8e, 0xe5, 0xa7, 0x22, 0xff, 0xe1,
+	0x53, 0x31, 0x87, 0xf0, 0x20, 0xa3, 0x10, 0x5b, 0x46, 0xcf, 0xd6, 0x24, 0xf6, 0xee, 0xc8, 0x33,
+	0xa3, 0xa1, 0x38, 0x76, 0x68, 0x27, 0x12, 0xe5, 0xa5, 0x44, 0xab, 0x8f, 0x45, 0x25, 0xe3, 0x82,
+	0xdf, 0xdc, 0xcf, 0xc5, 0xdf, 0x14, 0x5e, 0xa7, 0x2e, 0x22, 0x85, 0x7b, 0xb8, 0x88, 0x66, 0x3c,
+	0x9d, 0x06, 0x13, 0x6f, 0x64, 0x87, 0xe4, 0x9f, 0xcd, 0x98, 0x51, 0xb8, 0xc7, 0x8c, 0xd6, 0x2f,
+	0x09, 0xd4, 0x2e, 0x61, 0x33, 0xc2, 0xa2, 0x5f, 0x6f, 0x44, 0xd0, 0x2b, 0x28, 0xa6, 0xb7, 0x87,
+	0x1e, 0x2e, 0x45, 0x33, 0xef, 0xa5, 0xfa, 0x68, 0x1d, 0x8e, 0xcf, 0x36, 0xb7, 0x32, 0x6c, 0x7e,
+	0xb3, 0xca, 0x4e, 0xef, 0x69, 0x95, 0xbd, 0x0c, 0x37, 0x66, 0xa7, 0x7e, 0x12, 0xf6, 0x7a, 0x82,
+	0x09, 0x7b, 0xc3, 0xb6, 0xb9, 0x65, 0xed, 0x82, 0xfa, 0x8e, 0xb2, 0x71, 0x6a, 0xc5, 0xda, 0x07,
+	0x74, 0x42, 0x29, 0x73, 0x3c, 0xdf, 0x0e, 0xe9, 0x02, 0x1d, 0x16, 0xc4, 0xff, 0xc4, 0x8b, 0xdf,
+	0x01, 0x00, 0x00, 0xff, 0xff, 0xa7, 0xde, 0xf1, 0xe5, 0xdc, 0x06, 0x00, 0x00,
 }
