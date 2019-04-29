@@ -1,4 +1,4 @@
-package server
+package kvstore
 
 // KvStore is interface for key-value store
 type KvStore interface {

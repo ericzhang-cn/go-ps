@@ -1,4 +1,4 @@
-package server
+package kvstore
 
 import (
 	"encoding/binary"
@@ -9,13 +9,13 @@ import (
 
 // BadgerStore is kv store implementation using [badger](https://github.com/dgraph-io/badger)
 type BadgerStore struct {
-	dir string
+	Dir string
 }
 
 func (bs *BadgerStore) open() (db *badger.DB, err error) {
 	opts := badger.DefaultOptions
-	opts.Dir = bs.dir
-	opts.ValueDir = bs.dir
+	opts.Dir = bs.Dir
+	opts.ValueDir = bs.Dir
 	db, err = badger.Open(opts)
 	if err != nil {
 		return nil, err

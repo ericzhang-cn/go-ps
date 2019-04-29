@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/ericzhang-cn/go-ps/pkg/kvstore"
 	"github.com/ericzhang-cn/go-ps/rpc"
 	"github.com/golang/protobuf/ptypes/timestamp"
 	"google.golang.org/grpc/codes"
@@ -30,8 +31,8 @@ func (server *PsServer) RangePull(ctx context.Context, req *rpc.RangePullRequest
 		Header: &header,
 	}
 
-	kv := BadgerStore{
-		dir: server.c.badgerDir,
+	kv := kvstore.BadgerStore{
+		Dir: server.c.badgerDir,
 	}
 	values, err := kv.GetRange(req.Range.Begin, req.Range.End)
 	if err != nil {

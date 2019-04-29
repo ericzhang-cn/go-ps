@@ -1,4 +1,4 @@
-package server
+package kvstore
 
 import (
 	"os"
@@ -7,7 +7,7 @@ import (
 
 func TestGetAndPut(t *testing.T) {
 	kv := new(BadgerStore)
-	kv.dir = "./data"
+	kv.Dir = "./data"
 	err := kv.Put(uint64(42), []byte("hello world"))
 	if err != nil {
 		t.Error(err)
@@ -22,7 +22,7 @@ func TestGetAndPut(t *testing.T) {
 
 func TestGetBatchAndBatchPutBatch(t *testing.T) {
 	kv := new(BadgerStore)
-	kv.dir = "./data"
+	kv.Dir = "./data"
 	keys := []uint64{1, 2, 3}
 	values := [][]byte{[]byte("Alice"), []byte("Bob"), []byte("Oscar")}
 	err := kv.PutBatch(keys, values)
@@ -41,7 +41,7 @@ func TestGetBatchAndBatchPutBatch(t *testing.T) {
 
 func TestGetRange(t *testing.T) {
 	kv := new(BadgerStore)
-	kv.dir = "./data"
+	kv.Dir = "./data"
 	keys := []uint64{10, 15, 16}
 	values := [][]byte{[]byte("Alice"), []byte("Bob"), []byte("Oscar")}
 	err := kv.PutBatch(keys, values)
