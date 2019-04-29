@@ -1,4 +1,4 @@
-package hashring
+package route
 
 import (
 	"testing"
