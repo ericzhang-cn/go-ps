@@ -1,7 +1,7 @@
 package server
 
 // Config is configure for server node
-type Config struct {
+type serverConfig struct {
 	port                 uint16
 	coordinatorAddresses []string
 
