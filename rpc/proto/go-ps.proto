@@ -4,6 +4,12 @@ package rpc;
 
 import "google/protobuf/timestamp.proto";
 
+enum Role {
+    NOT_USED = 0x0;
+    SERVER_NODE = 0x1;
+    WORKER_NODE = 0x2;
+}
+
 message KV {
     uint64 key = 1;
     bytes value = 2;
@@ -20,16 +26,25 @@ message RangeKV {
     repeated KV kvs = 2;
 }
 
+message Node {
+    string ip = 1;
+    uint32 rank = 2;
+    Role role = 3;
+}
+
 message RequestHeader {
     uint32 src_node_rank = 1;
     uint32 dest_node_rank = 2;
     google.protobuf.Timestamp ts = 3;
     enum RequestType {
         NOT_USED = 0x000;
-        PING = 0x100;
+        HEARTBEAT = 0x100;
         RANGE_PULL = 0x101;
         RANGE_PUSH = 0x102;
         REPLICATE = 0x103;
+        REGISTER = 0x104;
+        UNREGISTER = 0x105;
+        PULL_NODES = 0x106;
     }
     RequestType type = 4;
 }
@@ -40,10 +55,12 @@ message ResponseHeader {
     google.protobuf.Timestamp ts = 3;
     enum ResponseType {
         NOT_USED = 0x000;
-        ACK_PING = 0x200;
         ACK_RANGE_PULL = 0x201;
         ACK_RANGE_PUSH = 0x202;
         ACK_REPLICATE = 0x203;
+        ACK_REGISTER = 0x204;
+        ACK_UNREGISTER = 0x205;
+        ACK_PULL_NODES = 0x206;
     }
     ResponseType type = 4;
     enum Status {
@@ -91,4 +108,47 @@ service PsServer {
 
 service PsWorker {}
 
-service Coordinator {}
+message HeartbeatRequest {
+    RequestHeader header = 1;
+}
+
+message HeartbeatResponse {
+    ResponseHeader header = 1;
+}
+
+message RegisterRequest {
+    RequestHeader header = 1;
+    string ip = 2;
+    Role role = 3;
+}
+
+message RegisterResponse {
+    ResponseHeader header = 1;
+    uint32 rank = 2;
+}
+
+message UnregisterRequest {
+    RequestHeader header = 1;
+    string ip = 2;
+    uint32 rank = 3;
+}
+
+message UnregisterResponse {
+    ResponseHeader header = 1;
+}
+
+message PullNodesRequest {
+    RequestHeader header = 1;
+}
+
+message PullNodesResponse {
+    ResponseHeader header = 1;
+    repeated Node nodes = 2;
+}
+
+service Coordinator {
+    rpc Heartbeat(HeartbeatRequest) returns (HeartbeatResponse) {}
+    rpc Register(RegisterRequest) returns (RegisterResponse) {}
+    rpc Unregister(UnregisterRequest) returns (UnregisterResponse) {}
+    rpc PullNodes(PullNodesRequest) returns (PullNodesResponse) {}
+}

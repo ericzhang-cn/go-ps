@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 
@@ -17,7 +16,6 @@ import (
 // Config is configure for server node
 type Config struct {
 	IPAddress            string
-	Port                 uint16
 	CoordinatorAddresses []string
 
 	CrReplicateFactor         uint8
@@ -88,15 +86,16 @@ func (server *PsServer) Duplicate(ctx context.Context, req *rpc.DuplicateRequest
 	return nil, status.Errorf(codes.Unimplemented, "method Duplicate not implemented")
 }
 
-// Serve start the server node
-func (server *PsServer) Serve() {
-	lis, err := net.Listen("tcp", string(fmt.Sprintf("%s:%d", server.C.IPAddress, server.C.Port)))
+// Serve starts the server node
+func (server *PsServer) Serve() (err error) {
+	lis, err := net.Listen("tcp", server.C.IPAddress)
 	if err != nil {
-		panic(err)
+		return err
 	}
 	s := grpc.NewServer()
 	rpc.RegisterPsServerServer(s, server)
 	if err := s.Serve(lis); err != nil {
-		panic(err)
+		return err
 	}
+	return nil
 }

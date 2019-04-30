@@ -25,30 +25,67 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
+type Role int32
+
+const (
+	Role_NOT_USED    Role = 0
+	Role_SERVER_NODE Role = 1
+	Role_WORKER_NODE Role = 2
+)
+
+var Role_name = map[int32]string{
+	0: "NOT_USED",
+	1: "SERVER_NODE",
+	2: "WORKER_NODE",
+}
+
+var Role_value = map[string]int32{
+	"NOT_USED":    0,
+	"SERVER_NODE": 1,
+	"WORKER_NODE": 2,
+}
+
+func (x Role) String() string {
+	return proto.EnumName(Role_name, int32(x))
+}
+
+func (Role) EnumDescriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{0}
+}
+
 type RequestHeader_RequestType int32
 
 const (
 	RequestHeader_NOT_USED   RequestHeader_RequestType = 0
-	RequestHeader_PING       RequestHeader_RequestType = 256
+	RequestHeader_HEARTBEAT  RequestHeader_RequestType = 256
 	RequestHeader_RANGE_PULL RequestHeader_RequestType = 257
 	RequestHeader_RANGE_PUSH RequestHeader_RequestType = 258
 	RequestHeader_REPLICATE  RequestHeader_RequestType = 259
+	RequestHeader_REGISTER   RequestHeader_RequestType = 260
+	RequestHeader_UNREGISTER RequestHeader_RequestType = 261
+	RequestHeader_PULL_NODES RequestHeader_RequestType = 262
 )
 
 var RequestHeader_RequestType_name = map[int32]string{
 	0:   "NOT_USED",
-	256: "PING",
+	256: "HEARTBEAT",
 	257: "RANGE_PULL",
 	258: "RANGE_PUSH",
 	259: "REPLICATE",
+	260: "REGISTER",
+	261: "UNREGISTER",
+	262: "PULL_NODES",
 }
 
 var RequestHeader_RequestType_value = map[string]int32{
 	"NOT_USED":   0,
-	"PING":       256,
+	"HEARTBEAT":  256,
 	"RANGE_PULL": 257,
 	"RANGE_PUSH": 258,
 	"REPLICATE":  259,
+	"REGISTER":   260,
+	"UNREGISTER": 261,
+	"PULL_NODES": 262,
 }
 
 func (x RequestHeader_RequestType) String() string {
@@ -56,33 +93,39 @@ func (x RequestHeader_RequestType) String() string {
 }
 
 func (RequestHeader_RequestType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{3, 0}
+	return fileDescriptor_bc169dcd4c07eef6, []int{4, 0}
 }
 
 type ResponseHeader_ResponseType int32
 
 const (
 	ResponseHeader_NOT_USED       ResponseHeader_ResponseType = 0
-	ResponseHeader_ACK_PING       ResponseHeader_ResponseType = 512
 	ResponseHeader_ACK_RANGE_PULL ResponseHeader_ResponseType = 513
 	ResponseHeader_ACK_RANGE_PUSH ResponseHeader_ResponseType = 514
 	ResponseHeader_ACK_REPLICATE  ResponseHeader_ResponseType = 515
+	ResponseHeader_ACK_REGISTER   ResponseHeader_ResponseType = 516
+	ResponseHeader_ACK_UNREGISTER ResponseHeader_ResponseType = 517
+	ResponseHeader_ACK_PULL_NODES ResponseHeader_ResponseType = 518
 )
 
 var ResponseHeader_ResponseType_name = map[int32]string{
 	0:   "NOT_USED",
-	512: "ACK_PING",
 	513: "ACK_RANGE_PULL",
 	514: "ACK_RANGE_PUSH",
 	515: "ACK_REPLICATE",
+	516: "ACK_REGISTER",
+	517: "ACK_UNREGISTER",
+	518: "ACK_PULL_NODES",
 }
 
 var ResponseHeader_ResponseType_value = map[string]int32{
 	"NOT_USED":       0,
-	"ACK_PING":       512,
 	"ACK_RANGE_PULL": 513,
 	"ACK_RANGE_PUSH": 514,
 	"ACK_REPLICATE":  515,
+	"ACK_REGISTER":   516,
+	"ACK_UNREGISTER": 517,
+	"ACK_PULL_NODES": 518,
 }
 
 func (x ResponseHeader_ResponseType) String() string {
@@ -90,7 +133,7 @@ func (x ResponseHeader_ResponseType) String() string {
 }
 
 func (ResponseHeader_ResponseType) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{4, 0}
+	return fileDescriptor_bc169dcd4c07eef6, []int{5, 0}
 }
 
 type ResponseHeader_Status int32
@@ -115,7 +158,7 @@ func (x ResponseHeader_Status) String() string {
 }
 
 func (ResponseHeader_Status) EnumDescriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{4, 1}
+	return fileDescriptor_bc169dcd4c07eef6, []int{5, 1}
 }
 
 type KV struct {
@@ -267,6 +310,61 @@ func (m *RangeKV) GetKvs() []*KV {
 	return nil
 }
 
+type Node struct {
+	Ip                   string   `protobuf:"bytes,1,opt,name=ip,proto3" json:"ip,omitempty"`
+	Rank                 uint32   `protobuf:"varint,2,opt,name=rank,proto3" json:"rank,omitempty"`
+	Role                 Role     `protobuf:"varint,3,opt,name=role,proto3,enum=rpc.Role" json:"role,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Node) Reset()         { *m = Node{} }
+func (m *Node) String() string { return proto.CompactTextString(m) }
+func (*Node) ProtoMessage()    {}
+func (*Node) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{3}
+}
+
+func (m *Node) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Node.Unmarshal(m, b)
+}
+func (m *Node) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Node.Marshal(b, m, deterministic)
+}
+func (m *Node) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Node.Merge(m, src)
+}
+func (m *Node) XXX_Size() int {
+	return xxx_messageInfo_Node.Size(m)
+}
+func (m *Node) XXX_DiscardUnknown() {
+	xxx_messageInfo_Node.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Node proto.InternalMessageInfo
+
+func (m *Node) GetIp() string {
+	if m != nil {
+		return m.Ip
+	}
+	return ""
+}
+
+func (m *Node) GetRank() uint32 {
+	if m != nil {
+		return m.Rank
+	}
+	return 0
+}
+
+func (m *Node) GetRole() Role {
+	if m != nil {
+		return m.Role
+	}
+	return Role_NOT_USED
+}
+
 type RequestHeader struct {
 	SrcNodeRank          uint32                    `protobuf:"varint,1,opt,name=src_node_rank,json=srcNodeRank,proto3" json:"src_node_rank,omitempty"`
 	DestNodeRank         uint32                    `protobuf:"varint,2,opt,name=dest_node_rank,json=destNodeRank,proto3" json:"dest_node_rank,omitempty"`
@@ -281,7 +379,7 @@ func (m *RequestHeader) Reset()         { *m = RequestHeader{} }
 func (m *RequestHeader) String() string { return proto.CompactTextString(m) }
 func (*RequestHeader) ProtoMessage()    {}
 func (*RequestHeader) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{3}
+	return fileDescriptor_bc169dcd4c07eef6, []int{4}
 }
 
 func (m *RequestHeader) XXX_Unmarshal(b []byte) error {
@@ -346,7 +444,7 @@ func (m *ResponseHeader) Reset()         { *m = ResponseHeader{} }
 func (m *ResponseHeader) String() string { return proto.CompactTextString(m) }
 func (*ResponseHeader) ProtoMessage()    {}
 func (*ResponseHeader) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{4}
+	return fileDescriptor_bc169dcd4c07eef6, []int{5}
 }
 
 func (m *ResponseHeader) XXX_Unmarshal(b []byte) error {
@@ -421,7 +519,7 @@ func (m *RangePullRequest) Reset()         { *m = RangePullRequest{} }
 func (m *RangePullRequest) String() string { return proto.CompactTextString(m) }
 func (*RangePullRequest) ProtoMessage()    {}
 func (*RangePullRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{5}
+	return fileDescriptor_bc169dcd4c07eef6, []int{6}
 }
 
 func (m *RangePullRequest) XXX_Unmarshal(b []byte) error {
@@ -468,7 +566,7 @@ func (m *RangePullResponse) Reset()         { *m = RangePullResponse{} }
 func (m *RangePullResponse) String() string { return proto.CompactTextString(m) }
 func (*RangePullResponse) ProtoMessage()    {}
 func (*RangePullResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{6}
+	return fileDescriptor_bc169dcd4c07eef6, []int{7}
 }
 
 func (m *RangePullResponse) XXX_Unmarshal(b []byte) error {
@@ -515,7 +613,7 @@ func (m *RangePushRequest) Reset()         { *m = RangePushRequest{} }
 func (m *RangePushRequest) String() string { return proto.CompactTextString(m) }
 func (*RangePushRequest) ProtoMessage()    {}
 func (*RangePushRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{7}
+	return fileDescriptor_bc169dcd4c07eef6, []int{8}
 }
 
 func (m *RangePushRequest) XXX_Unmarshal(b []byte) error {
@@ -561,7 +659,7 @@ func (m *RangePushResponse) Reset()         { *m = RangePushResponse{} }
 func (m *RangePushResponse) String() string { return proto.CompactTextString(m) }
 func (*RangePushResponse) ProtoMessage()    {}
 func (*RangePushResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{8}
+	return fileDescriptor_bc169dcd4c07eef6, []int{9}
 }
 
 func (m *RangePushResponse) XXX_Unmarshal(b []byte) error {
@@ -602,7 +700,7 @@ func (m *DuplicateRequest) Reset()         { *m = DuplicateRequest{} }
 func (m *DuplicateRequest) String() string { return proto.CompactTextString(m) }
 func (*DuplicateRequest) ProtoMessage()    {}
 func (*DuplicateRequest) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{9}
+	return fileDescriptor_bc169dcd4c07eef6, []int{10}
 }
 
 func (m *DuplicateRequest) XXX_Unmarshal(b []byte) error {
@@ -655,7 +753,7 @@ func (m *DuplicateResponse) Reset()         { *m = DuplicateResponse{} }
 func (m *DuplicateResponse) String() string { return proto.CompactTextString(m) }
 func (*DuplicateResponse) ProtoMessage()    {}
 func (*DuplicateResponse) Descriptor() ([]byte, []int) {
-	return fileDescriptor_bc169dcd4c07eef6, []int{10}
+	return fileDescriptor_bc169dcd4c07eef6, []int{11}
 }
 
 func (m *DuplicateResponse) XXX_Unmarshal(b []byte) error {
@@ -683,13 +781,375 @@ func (m *DuplicateResponse) GetHeader() *ResponseHeader {
 	return nil
 }
 
+type HeartbeatRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *HeartbeatRequest) Reset()         { *m = HeartbeatRequest{} }
+func (m *HeartbeatRequest) String() string { return proto.CompactTextString(m) }
+func (*HeartbeatRequest) ProtoMessage()    {}
+func (*HeartbeatRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{12}
+}
+
+func (m *HeartbeatRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HeartbeatRequest.Unmarshal(m, b)
+}
+func (m *HeartbeatRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HeartbeatRequest.Marshal(b, m, deterministic)
+}
+func (m *HeartbeatRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeartbeatRequest.Merge(m, src)
+}
+func (m *HeartbeatRequest) XXX_Size() int {
+	return xxx_messageInfo_HeartbeatRequest.Size(m)
+}
+func (m *HeartbeatRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeartbeatRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeartbeatRequest proto.InternalMessageInfo
+
+func (m *HeartbeatRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+type HeartbeatResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *HeartbeatResponse) Reset()         { *m = HeartbeatResponse{} }
+func (m *HeartbeatResponse) String() string { return proto.CompactTextString(m) }
+func (*HeartbeatResponse) ProtoMessage()    {}
+func (*HeartbeatResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{13}
+}
+
+func (m *HeartbeatResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_HeartbeatResponse.Unmarshal(m, b)
+}
+func (m *HeartbeatResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_HeartbeatResponse.Marshal(b, m, deterministic)
+}
+func (m *HeartbeatResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_HeartbeatResponse.Merge(m, src)
+}
+func (m *HeartbeatResponse) XXX_Size() int {
+	return xxx_messageInfo_HeartbeatResponse.Size(m)
+}
+func (m *HeartbeatResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_HeartbeatResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_HeartbeatResponse proto.InternalMessageInfo
+
+func (m *HeartbeatResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+type RegisterRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Ip                   string         `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
+	Role                 Role           `protobuf:"varint,3,opt,name=role,proto3,enum=rpc.Role" json:"role,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *RegisterRequest) Reset()         { *m = RegisterRequest{} }
+func (m *RegisterRequest) String() string { return proto.CompactTextString(m) }
+func (*RegisterRequest) ProtoMessage()    {}
+func (*RegisterRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{14}
+}
+
+func (m *RegisterRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterRequest.Unmarshal(m, b)
+}
+func (m *RegisterRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterRequest.Marshal(b, m, deterministic)
+}
+func (m *RegisterRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterRequest.Merge(m, src)
+}
+func (m *RegisterRequest) XXX_Size() int {
+	return xxx_messageInfo_RegisterRequest.Size(m)
+}
+func (m *RegisterRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterRequest proto.InternalMessageInfo
+
+func (m *RegisterRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *RegisterRequest) GetIp() string {
+	if m != nil {
+		return m.Ip
+	}
+	return ""
+}
+
+func (m *RegisterRequest) GetRole() Role {
+	if m != nil {
+		return m.Role
+	}
+	return Role_NOT_USED
+}
+
+type RegisterResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Rank                 uint32          `protobuf:"varint,2,opt,name=rank,proto3" json:"rank,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *RegisterResponse) Reset()         { *m = RegisterResponse{} }
+func (m *RegisterResponse) String() string { return proto.CompactTextString(m) }
+func (*RegisterResponse) ProtoMessage()    {}
+func (*RegisterResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{15}
+}
+
+func (m *RegisterResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_RegisterResponse.Unmarshal(m, b)
+}
+func (m *RegisterResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_RegisterResponse.Marshal(b, m, deterministic)
+}
+func (m *RegisterResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_RegisterResponse.Merge(m, src)
+}
+func (m *RegisterResponse) XXX_Size() int {
+	return xxx_messageInfo_RegisterResponse.Size(m)
+}
+func (m *RegisterResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_RegisterResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_RegisterResponse proto.InternalMessageInfo
+
+func (m *RegisterResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *RegisterResponse) GetRank() uint32 {
+	if m != nil {
+		return m.Rank
+	}
+	return 0
+}
+
+type UnregisterRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Ip                   string         `protobuf:"bytes,2,opt,name=ip,proto3" json:"ip,omitempty"`
+	Rank                 uint32         `protobuf:"varint,3,opt,name=rank,proto3" json:"rank,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *UnregisterRequest) Reset()         { *m = UnregisterRequest{} }
+func (m *UnregisterRequest) String() string { return proto.CompactTextString(m) }
+func (*UnregisterRequest) ProtoMessage()    {}
+func (*UnregisterRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{16}
+}
+
+func (m *UnregisterRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnregisterRequest.Unmarshal(m, b)
+}
+func (m *UnregisterRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnregisterRequest.Marshal(b, m, deterministic)
+}
+func (m *UnregisterRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnregisterRequest.Merge(m, src)
+}
+func (m *UnregisterRequest) XXX_Size() int {
+	return xxx_messageInfo_UnregisterRequest.Size(m)
+}
+func (m *UnregisterRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnregisterRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnregisterRequest proto.InternalMessageInfo
+
+func (m *UnregisterRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *UnregisterRequest) GetIp() string {
+	if m != nil {
+		return m.Ip
+	}
+	return ""
+}
+
+func (m *UnregisterRequest) GetRank() uint32 {
+	if m != nil {
+		return m.Rank
+	}
+	return 0
+}
+
+type UnregisterResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *UnregisterResponse) Reset()         { *m = UnregisterResponse{} }
+func (m *UnregisterResponse) String() string { return proto.CompactTextString(m) }
+func (*UnregisterResponse) ProtoMessage()    {}
+func (*UnregisterResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{17}
+}
+
+func (m *UnregisterResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_UnregisterResponse.Unmarshal(m, b)
+}
+func (m *UnregisterResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_UnregisterResponse.Marshal(b, m, deterministic)
+}
+func (m *UnregisterResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_UnregisterResponse.Merge(m, src)
+}
+func (m *UnregisterResponse) XXX_Size() int {
+	return xxx_messageInfo_UnregisterResponse.Size(m)
+}
+func (m *UnregisterResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_UnregisterResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_UnregisterResponse proto.InternalMessageInfo
+
+func (m *UnregisterResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+type PullNodesRequest struct {
+	Header               *RequestHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}       `json:"-"`
+	XXX_unrecognized     []byte         `json:"-"`
+	XXX_sizecache        int32          `json:"-"`
+}
+
+func (m *PullNodesRequest) Reset()         { *m = PullNodesRequest{} }
+func (m *PullNodesRequest) String() string { return proto.CompactTextString(m) }
+func (*PullNodesRequest) ProtoMessage()    {}
+func (*PullNodesRequest) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{18}
+}
+
+func (m *PullNodesRequest) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PullNodesRequest.Unmarshal(m, b)
+}
+func (m *PullNodesRequest) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PullNodesRequest.Marshal(b, m, deterministic)
+}
+func (m *PullNodesRequest) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PullNodesRequest.Merge(m, src)
+}
+func (m *PullNodesRequest) XXX_Size() int {
+	return xxx_messageInfo_PullNodesRequest.Size(m)
+}
+func (m *PullNodesRequest) XXX_DiscardUnknown() {
+	xxx_messageInfo_PullNodesRequest.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PullNodesRequest proto.InternalMessageInfo
+
+func (m *PullNodesRequest) GetHeader() *RequestHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+type PullNodesResponse struct {
+	Header               *ResponseHeader `protobuf:"bytes,1,opt,name=header,proto3" json:"header,omitempty"`
+	Nodes                []*Node         `protobuf:"bytes,2,rep,name=nodes,proto3" json:"nodes,omitempty"`
+	XXX_NoUnkeyedLiteral struct{}        `json:"-"`
+	XXX_unrecognized     []byte          `json:"-"`
+	XXX_sizecache        int32           `json:"-"`
+}
+
+func (m *PullNodesResponse) Reset()         { *m = PullNodesResponse{} }
+func (m *PullNodesResponse) String() string { return proto.CompactTextString(m) }
+func (*PullNodesResponse) ProtoMessage()    {}
+func (*PullNodesResponse) Descriptor() ([]byte, []int) {
+	return fileDescriptor_bc169dcd4c07eef6, []int{19}
+}
+
+func (m *PullNodesResponse) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_PullNodesResponse.Unmarshal(m, b)
+}
+func (m *PullNodesResponse) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_PullNodesResponse.Marshal(b, m, deterministic)
+}
+func (m *PullNodesResponse) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_PullNodesResponse.Merge(m, src)
+}
+func (m *PullNodesResponse) XXX_Size() int {
+	return xxx_messageInfo_PullNodesResponse.Size(m)
+}
+func (m *PullNodesResponse) XXX_DiscardUnknown() {
+	xxx_messageInfo_PullNodesResponse.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_PullNodesResponse proto.InternalMessageInfo
+
+func (m *PullNodesResponse) GetHeader() *ResponseHeader {
+	if m != nil {
+		return m.Header
+	}
+	return nil
+}
+
+func (m *PullNodesResponse) GetNodes() []*Node {
+	if m != nil {
+		return m.Nodes
+	}
+	return nil
+}
+
 func init() {
+	proto.RegisterEnum("rpc.Role", Role_name, Role_value)
 	proto.RegisterEnum("rpc.RequestHeader_RequestType", RequestHeader_RequestType_name, RequestHeader_RequestType_value)
 	proto.RegisterEnum("rpc.ResponseHeader_ResponseType", ResponseHeader_ResponseType_name, ResponseHeader_ResponseType_value)
 	proto.RegisterEnum("rpc.ResponseHeader_Status", ResponseHeader_Status_name, ResponseHeader_Status_value)
 	proto.RegisterType((*KV)(nil), "rpc.KV")
 	proto.RegisterType((*Range)(nil), "rpc.Range")
 	proto.RegisterType((*RangeKV)(nil), "rpc.RangeKV")
+	proto.RegisterType((*Node)(nil), "rpc.Node")
 	proto.RegisterType((*RequestHeader)(nil), "rpc.RequestHeader")
 	proto.RegisterType((*ResponseHeader)(nil), "rpc.ResponseHeader")
 	proto.RegisterType((*RangePullRequest)(nil), "rpc.RangePullRequest")
@@ -698,57 +1158,81 @@ func init() {
 	proto.RegisterType((*RangePushResponse)(nil), "rpc.RangePushResponse")
 	proto.RegisterType((*DuplicateRequest)(nil), "rpc.DuplicateRequest")
 	proto.RegisterType((*DuplicateResponse)(nil), "rpc.DuplicateResponse")
+	proto.RegisterType((*HeartbeatRequest)(nil), "rpc.HeartbeatRequest")
+	proto.RegisterType((*HeartbeatResponse)(nil), "rpc.HeartbeatResponse")
+	proto.RegisterType((*RegisterRequest)(nil), "rpc.RegisterRequest")
+	proto.RegisterType((*RegisterResponse)(nil), "rpc.RegisterResponse")
+	proto.RegisterType((*UnregisterRequest)(nil), "rpc.UnregisterRequest")
+	proto.RegisterType((*UnregisterResponse)(nil), "rpc.UnregisterResponse")
+	proto.RegisterType((*PullNodesRequest)(nil), "rpc.PullNodesRequest")
+	proto.RegisterType((*PullNodesResponse)(nil), "rpc.PullNodesResponse")
 }
 
 func init() { proto.RegisterFile("go-ps.proto", fileDescriptor_bc169dcd4c07eef6) }
 
 var fileDescriptor_bc169dcd4c07eef6 = []byte{
-	// 707 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x54, 0x5d, 0x6f, 0xda, 0x3c,
-	0x18, 0x6d, 0x42, 0xa0, 0xf0, 0xf0, 0xf1, 0xe6, 0x75, 0xdf, 0x77, 0xca, 0xa8, 0xb4, 0x45, 0x56,
-	0x2f, 0x50, 0xa7, 0x51, 0x29, 0xdb, 0xe5, 0x2e, 0x56, 0x51, 0xfa, 0x21, 0x3a, 0x8a, 0x0c, 0x65,
-	0xbb, 0x63, 0x29, 0x71, 0x29, 0x82, 0xc6, 0x99, 0x6d, 0x90, 0x7a, 0xb7, 0x8f, 0x3f, 0x30, 0x69,
-	0xda, 0x3f, 0xda, 0x0f, 0x9b, 0xe2, 0x84, 0x10, 0xa0, 0x93, 0xa6, 0x4a, 0xd3, 0xee, 0xfc, 0x1c,
-	0x3f, 0xc7, 0xe7, 0x39, 0xc7, 0x4e, 0xa0, 0x38, 0x62, 0xcf, 0x03, 0x51, 0x0f, 0x38, 0x93, 0x0c,
-	0x65, 0x78, 0x30, 0xac, 0x3e, 0x1d, 0x31, 0x36, 0x9a, 0xd2, 0x03, 0x05, 0x5d, 0xcd, 0xae, 0x0f,
-	0xe4, 0xf8, 0x96, 0x0a, 0xe9, 0xde, 0x06, 0x51, 0x17, 0x3e, 0x06, 0xbd, 0xd5, 0x47, 0x26, 0x64,
-	0x26, 0xf4, 0xce, 0xd2, 0x6c, 0xad, 0x66, 0x90, 0x70, 0x89, 0xfe, 0x83, 0xec, 0xdc, 0x9d, 0xce,
-	0xa8, 0xa5, 0xdb, 0x5a, 0xad, 0x44, 0xa2, 0x02, 0x59, 0xb0, 0x3d, 0xa7, 0x5c, 0x8c, 0x99, 0x6f,
-	0x65, 0x6c, 0xad, 0x56, 0x26, 0x8b, 0x12, 0x1f, 0x40, 0x96, 0xb8, 0xfe, 0x88, 0x86, 0xc4, 0x2b,
-	0x3a, 0x1a, 0xfb, 0xf1, 0x61, 0x51, 0x11, 0x0a, 0x50, 0xdf, 0x53, 0x87, 0x19, 0x24, 0x5c, 0xe2,
-	0x63, 0xd8, 0x56, 0x84, 0x56, 0x1f, 0xd9, 0x90, 0xe5, 0xe1, 0x52, 0x51, 0x8a, 0x0e, 0xd4, 0x79,
-	0x30, 0xac, 0xab, 0x4d, 0x12, 0x6d, 0xa0, 0xc7, 0x90, 0x99, 0xcc, 0x85, 0xa5, 0xdb, 0x99, 0x5a,
-	0xd1, 0xd9, 0x56, 0xfb, 0xad, 0x3e, 0x09, 0x31, 0xfc, 0x4d, 0x87, 0x32, 0xa1, 0x1f, 0x66, 0x54,
-	0xc8, 0x53, 0xea, 0x7a, 0x94, 0x23, 0x0c, 0x65, 0xc1, 0x87, 0x03, 0x9f, 0x79, 0x74, 0xc0, 0x5d,
-	0x7f, 0xa2, 0x8e, 0x2d, 0x93, 0xa2, 0xe0, 0xc3, 0x36, 0xf3, 0x28, 0x71, 0xfd, 0x09, 0xda, 0x83,
-	0x8a, 0x47, 0x85, 0x4c, 0x35, 0xe9, 0xaa, 0xa9, 0x14, 0xa2, 0x49, 0xd7, 0x3e, 0xe8, 0x52, 0x28,
-	0xa7, 0x45, 0xa7, 0x5a, 0x8f, 0xa2, 0xac, 0x2f, 0xa2, 0xac, 0xf7, 0x16, 0x51, 0x12, 0x5d, 0x0a,
-	0xe4, 0x80, 0x21, 0xef, 0x02, 0x6a, 0x19, 0xb6, 0x56, 0xab, 0x38, 0x4f, 0x22, 0x0f, 0xe9, 0xb9,
-	0x16, 0x55, 0xef, 0x2e, 0xa0, 0x44, 0xf5, 0xe2, 0x77, 0x50, 0x4c, 0x81, 0xa8, 0x04, 0xf9, 0xf6,
-	0x45, 0x6f, 0x70, 0xd9, 0x6d, 0x1e, 0x99, 0x5b, 0xa8, 0x00, 0x46, 0xe7, 0xac, 0x7d, 0x62, 0x7e,
-	0xd4, 0xd1, 0x3f, 0x00, 0xe4, 0xb0, 0x7d, 0xd2, 0x1c, 0x74, 0x2e, 0xcf, 0xcf, 0xcd, 0x4f, 0x2b,
-	0x40, 0xf7, 0xd4, 0xfc, 0xac, 0xa3, 0x0a, 0x14, 0x48, 0xb3, 0x73, 0x7e, 0xd6, 0x38, 0xec, 0x35,
-	0xcd, 0x2f, 0x3a, 0xfe, 0x9e, 0x81, 0x0a, 0xa1, 0x22, 0x60, 0xbe, 0xa0, 0x7f, 0x35, 0x96, 0x97,
-	0x2b, 0xb1, 0xd8, 0x71, 0x2c, 0xe9, 0xc1, 0x92, 0x72, 0x19, 0x0c, 0x72, 0x20, 0x27, 0xa4, 0x2b,
-	0x67, 0xc2, 0xca, 0x2a, 0x5e, 0xf5, 0x3e, 0x5e, 0x57, 0x75, 0x90, 0xb8, 0x13, 0xed, 0x42, 0x81,
-	0x72, 0xce, 0xf8, 0xe0, 0x56, 0x8c, 0xac, 0x9c, 0xad, 0xd5, 0x0a, 0x24, 0xaf, 0x80, 0x37, 0x62,
-	0x84, 0xc7, 0x50, 0x4a, 0xcb, 0xac, 0x45, 0x5d, 0x86, 0xfc, 0x61, 0xa3, 0x35, 0x88, 0xe2, 0x36,
-	0xd0, 0x0e, 0x54, 0xc2, 0x32, 0x1d, 0xf9, 0x06, 0x18, 0xc6, 0x6e, 0x20, 0x04, 0x65, 0x05, 0x2e,
-	0xa3, 0x37, 0xf0, 0x2e, 0xe4, 0xa2, 0xc9, 0x50, 0x0e, 0xf4, 0x8b, 0x96, 0xba, 0xc9, 0x6c, 0x93,
-	0x90, 0x0b, 0x62, 0x6a, 0xf8, 0x3d, 0x98, 0xea, 0x61, 0x77, 0x66, 0xd3, 0x69, 0x7c, 0xf5, 0x68,
-	0x1f, 0x72, 0x37, 0xca, 0x51, 0xfc, 0xfe, 0xd1, 0xe6, 0xdb, 0x21, 0x71, 0xc7, 0xf2, 0x53, 0xd1,
-	0x7f, 0xf1, 0xa9, 0xe0, 0x6b, 0xf8, 0x37, 0xa5, 0x10, 0x59, 0x46, 0xcf, 0xd6, 0x24, 0x76, 0xee,
-	0xc9, 0x33, 0xd1, 0xd8, 0x83, 0xdc, 0x64, 0x7e, 0xe4, 0x4a, 0x37, 0x16, 0x29, 0x2d, 0x45, 0x5a,
-	0x7d, 0x12, 0xef, 0x61, 0x2f, 0x71, 0x22, 0x6e, 0x1e, 0xe2, 0xe4, 0xf7, 0x54, 0x5e, 0x27, 0x6e,
-	0x42, 0x95, 0x07, 0xb8, 0xc1, 0x5f, 0x35, 0x30, 0x8f, 0x66, 0xc1, 0x74, 0x3c, 0x74, 0x25, 0xfd,
-	0x63, 0x83, 0xa2, 0x7d, 0x30, 0xbd, 0x85, 0x4a, 0x83, 0xcd, 0x7c, 0x49, 0x79, 0xfc, 0x8b, 0xdc,
-	0xc0, 0x43, 0x53, 0xa9, 0x89, 0x1e, 0x60, 0xca, 0xf9, 0xa1, 0x41, 0xbe, 0x23, 0xba, 0x94, 0xcf,
-	0x29, 0x47, 0xaf, 0xa0, 0x90, 0xdc, 0x38, 0xfa, 0x7f, 0x39, 0x5d, 0xea, 0x8d, 0x55, 0x1f, 0xad,
-	0xc3, 0xd1, 0xb1, 0x78, 0x2b, 0xc5, 0x16, 0x37, 0xab, 0xec, 0xe4, 0x5e, 0x57, 0xd9, 0xcb, 0x8b,
-	0x88, 0xd8, 0x89, 0x95, 0x98, 0xbd, 0x1e, 0x76, 0xcc, 0xde, 0x70, 0x8c, 0xb7, 0x1c, 0x08, 0x5d,
-	0xbc, 0x65, 0x7c, 0x42, 0xb9, 0x53, 0x86, 0x62, 0x83, 0x31, 0xee, 0x8d, 0x7d, 0x57, 0x32, 0x7e,
-	0x95, 0x53, 0xff, 0x93, 0x17, 0x3f, 0x03, 0x00, 0x00, 0xff, 0xff, 0xdb, 0xd8, 0xe9, 0xc2, 0xd3,
-	0x06, 0x00, 0x00,
+	// 976 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xc4, 0x56, 0x5b, 0x6f, 0xe3, 0x44,
+	0x14, 0x8e, 0x1d, 0x27, 0x4d, 0x4e, 0x2e, 0x75, 0x67, 0x77, 0x21, 0x64, 0x05, 0x1b, 0x8d, 0xf6,
+	0xa1, 0x2a, 0x22, 0x95, 0x0c, 0x42, 0x42, 0x42, 0x40, 0x68, 0xbd, 0xdb, 0x2a, 0x25, 0xa9, 0x26,
+	0x69, 0xf6, 0x31, 0x38, 0xc9, 0x6c, 0x1a, 0x25, 0xb5, 0xcd, 0x8c, 0x13, 0xa9, 0x6f, 0xdc, 0x96,
+	0x47, 0xc4, 0x1b, 0x7f, 0x68, 0x9f, 0xf8, 0x55, 0x68, 0xc6, 0x97, 0x4c, 0x9c, 0x22, 0x90, 0x05,
+	0xe2, 0xcd, 0xf3, 0xcd, 0x39, 0xe7, 0x3b, 0xf7, 0x31, 0x54, 0xe6, 0xde, 0x47, 0x3e, 0x6f, 0xfb,
+	0xcc, 0x0b, 0x3c, 0x94, 0x67, 0xfe, 0xb4, 0xf9, 0x6c, 0xee, 0x79, 0xf3, 0x15, 0x3d, 0x95, 0xd0,
+	0x64, 0xfd, 0xfa, 0x34, 0x58, 0xdc, 0x51, 0x1e, 0x38, 0x77, 0x7e, 0x28, 0x85, 0x5f, 0x80, 0xde,
+	0x1d, 0x21, 0x13, 0xf2, 0x4b, 0x7a, 0xdf, 0xd0, 0x5a, 0xda, 0xb1, 0x41, 0xc4, 0x27, 0x7a, 0x0c,
+	0x85, 0x8d, 0xb3, 0x5a, 0xd3, 0x86, 0xde, 0xd2, 0x8e, 0xab, 0x24, 0x3c, 0xa0, 0x06, 0x1c, 0x6c,
+	0x28, 0xe3, 0x0b, 0xcf, 0x6d, 0xe4, 0x5b, 0xda, 0x71, 0x8d, 0xc4, 0x47, 0x7c, 0x0a, 0x05, 0xe2,
+	0xb8, 0x73, 0x2a, 0x14, 0x27, 0x74, 0xbe, 0x70, 0x23, 0x63, 0xe1, 0x41, 0x10, 0x50, 0x77, 0x26,
+	0x8d, 0x19, 0x44, 0x7c, 0xe2, 0x17, 0x70, 0x20, 0x15, 0xba, 0x23, 0xd4, 0x82, 0x02, 0x13, 0x9f,
+	0x52, 0xa5, 0x62, 0x41, 0x9b, 0xf9, 0xd3, 0xb6, 0xbc, 0x24, 0xe1, 0x05, 0x7a, 0x0f, 0xf2, 0xcb,
+	0x0d, 0x6f, 0xe8, 0xad, 0xfc, 0x71, 0xc5, 0x3a, 0x90, 0xf7, 0xdd, 0x11, 0x11, 0x18, 0xbe, 0x04,
+	0xa3, 0xe7, 0xcd, 0x28, 0xaa, 0x83, 0xbe, 0xf0, 0xa5, 0x85, 0x32, 0xd1, 0x17, 0x3e, 0x42, 0x60,
+	0x30, 0xc7, 0x5d, 0x4a, 0xca, 0x1a, 0x91, 0xdf, 0xe8, 0x7d, 0x30, 0x98, 0xb7, 0xa2, 0xd2, 0xf7,
+	0xba, 0x55, 0x0e, 0x79, 0xbc, 0x15, 0x25, 0x12, 0xc6, 0x7f, 0xe8, 0x50, 0x23, 0xf4, 0xbb, 0x35,
+	0xe5, 0xc1, 0x05, 0x75, 0x66, 0x94, 0x21, 0x0c, 0x35, 0xce, 0xa6, 0x63, 0xd7, 0x9b, 0xd1, 0xb1,
+	0xb4, 0xa6, 0x49, 0x6b, 0x15, 0xce, 0xa6, 0x82, 0x94, 0x08, 0xa3, 0xcf, 0xa1, 0x3e, 0xa3, 0x3c,
+	0x50, 0x84, 0x42, 0xca, 0xaa, 0x40, 0x13, 0xa9, 0x13, 0xd0, 0x03, 0x2e, 0x89, 0x2b, 0x56, 0xb3,
+	0x1d, 0x56, 0xa5, 0x1d, 0x57, 0xa5, 0x3d, 0x8c, 0xab, 0x42, 0xf4, 0x80, 0x23, 0x0b, 0x8c, 0xe0,
+	0xde, 0xa7, 0x0d, 0x43, 0xba, 0xf9, 0x41, 0xe8, 0xa6, 0xea, 0x57, 0x7c, 0x1a, 0xde, 0xfb, 0x94,
+	0x48, 0x59, 0xfc, 0xab, 0x06, 0x15, 0x05, 0x45, 0x55, 0x28, 0xf5, 0xfa, 0xc3, 0xf1, 0xcd, 0xc0,
+	0x3e, 0x37, 0x73, 0xa8, 0x0e, 0xe5, 0x0b, 0xbb, 0x43, 0x86, 0x5f, 0xdb, 0x9d, 0xa1, 0xf9, 0xbd,
+	0x8e, 0x0e, 0x01, 0x48, 0xa7, 0xf7, 0xd2, 0x1e, 0x5f, 0xdf, 0x5c, 0x5d, 0x99, 0x3f, 0xec, 0x00,
+	0x83, 0x0b, 0xf3, 0x47, 0x5d, 0x68, 0x10, 0xfb, 0xfa, 0xea, 0xf2, 0xac, 0x33, 0xb4, 0xcd, 0x9f,
+	0x74, 0x54, 0x83, 0x12, 0xb1, 0x5f, 0x5e, 0x0e, 0x86, 0x36, 0x31, 0x7f, 0x96, 0xf2, 0x37, 0xbd,
+	0x04, 0x78, 0x23, 0x01, 0x61, 0x6b, 0xdc, 0xeb, 0x9f, 0xdb, 0x03, 0xf3, 0x17, 0x1d, 0xbf, 0xcd,
+	0x43, 0x9d, 0x50, 0xee, 0x7b, 0x2e, 0xa7, 0xff, 0x6b, 0x36, 0x3f, 0xd9, 0xc9, 0x66, 0x2b, 0xca,
+	0xa6, 0xea, 0x58, 0x72, 0xdc, 0xe6, 0x13, 0x59, 0x50, 0xe4, 0x81, 0x13, 0xac, 0x79, 0xa3, 0x20,
+	0xf5, 0x9a, 0x0f, 0xe9, 0x0d, 0xa4, 0x04, 0x89, 0x24, 0xd1, 0x53, 0x28, 0x53, 0xc6, 0x3c, 0x36,
+	0xbe, 0xe3, 0xf3, 0x46, 0x51, 0x76, 0x62, 0x49, 0x02, 0xdf, 0xf0, 0x39, 0xfe, 0x5d, 0x83, 0xaa,
+	0xca, 0x93, 0xaa, 0xd0, 0x23, 0xa8, 0x77, 0xce, 0xba, 0x63, 0xb5, 0x2a, 0x46, 0x1a, 0x14, 0x95,
+	0x31, 0x10, 0x82, 0x9a, 0x04, 0xb7, 0xd5, 0x31, 0xd0, 0x11, 0x54, 0x43, 0x2c, 0xae, 0x50, 0xa2,
+	0xab, 0x56, 0x29, 0x01, 0xd5, 0x4a, 0x19, 0xf8, 0x29, 0x14, 0xc3, 0x40, 0x50, 0x11, 0xf4, 0x7e,
+	0xd7, 0xcc, 0xa1, 0x32, 0x14, 0x6c, 0x42, 0xfa, 0xc4, 0xd4, 0xf0, 0xb7, 0x60, 0xca, 0x49, 0xbc,
+	0x5e, 0xaf, 0x56, 0x51, 0x7f, 0xa1, 0x13, 0x28, 0xde, 0xca, 0x04, 0x44, 0x03, 0x8b, 0xf6, 0x3b,
+	0x94, 0x44, 0x12, 0xdb, 0xd9, 0xd6, 0xff, 0x62, 0xb6, 0xf1, 0x6b, 0x38, 0x52, 0x18, 0xc2, 0x04,
+	0xa1, 0x0f, 0x53, 0x14, 0x8f, 0x1e, 0x48, 0x7f, 0xc2, 0xf1, 0x1c, 0x8a, 0xcb, 0xcd, 0xb9, 0x13,
+	0x38, 0x11, 0x49, 0x75, 0x4b, 0xd2, 0x1d, 0x91, 0xe8, 0x0e, 0xcf, 0x92, 0x48, 0xf8, 0x6d, 0x96,
+	0x48, 0xfe, 0x19, 0xcb, 0x57, 0x49, 0x34, 0x82, 0x25, 0x43, 0x34, 0xf8, 0x37, 0x0d, 0xcc, 0xf3,
+	0xb5, 0xbf, 0x5a, 0x4c, 0x9d, 0x80, 0xfe, 0x67, 0x8e, 0xa2, 0x13, 0x30, 0x67, 0x31, 0xcb, 0x99,
+	0xb7, 0x76, 0x03, 0xca, 0xa2, 0x9d, 0xbe, 0x87, 0x8b, 0xa0, 0x14, 0x8f, 0xb2, 0x04, 0xf5, 0x05,
+	0x98, 0x17, 0xd4, 0x61, 0xc1, 0x84, 0x3a, 0x41, 0x86, 0x98, 0x84, 0x07, 0x8a, 0x7e, 0x16, 0x0f,
+	0x56, 0x70, 0x48, 0xe8, 0x7c, 0xc1, 0x03, 0xca, 0xb2, 0x24, 0x35, 0x7c, 0x5e, 0xf4, 0xe4, 0x79,
+	0xf9, 0x9b, 0xa7, 0x64, 0x00, 0xe6, 0x96, 0x2d, 0x4b, 0x4f, 0x3f, 0xf0, 0x7c, 0xe1, 0x29, 0x1c,
+	0xdd, 0xb8, 0xec, 0x5f, 0x0c, 0x22, 0x26, 0xc9, 0x2b, 0x24, 0x1d, 0x40, 0x2a, 0x49, 0xc6, 0x62,
+	0x8b, 0x61, 0x16, 0xdb, 0x9a, 0x67, 0x29, 0xb6, 0x03, 0x47, 0x8a, 0x7e, 0x96, 0xec, 0x3d, 0x83,
+	0x82, 0x78, 0x40, 0xe2, 0x3f, 0x86, 0xb0, 0x3c, 0xf2, 0xf5, 0x08, 0xf1, 0x93, 0x4f, 0xc1, 0x10,
+	0xd5, 0x4a, 0x2d, 0xe1, 0x43, 0xa8, 0x0c, 0x6c, 0x32, 0xb2, 0x89, 0x5c, 0x8e, 0xa6, 0x26, 0x80,
+	0x57, 0x7d, 0xd2, 0x8d, 0x01, 0xdd, 0x7a, 0xab, 0x41, 0xe9, 0x9a, 0x0f, 0x28, 0xdb, 0x50, 0x86,
+	0x3e, 0x87, 0x72, 0xb2, 0xb9, 0xd0, 0x93, 0xed, 0x94, 0x29, 0xbb, 0xb2, 0xf9, 0x4e, 0x1a, 0x0e,
+	0xfd, 0xc5, 0x39, 0x45, 0x9b, 0xdf, 0xee, 0x6a, 0x27, 0xfb, 0x69, 0x57, 0x7b, 0xbb, 0x50, 0x42,
+	0xed, 0x64, 0x24, 0x23, 0xed, 0xf4, 0xd2, 0x88, 0xb4, 0xf7, 0x26, 0x17, 0xe7, 0x2c, 0x10, 0x51,
+	0xbc, 0xf2, 0xd8, 0x92, 0x32, 0xeb, 0x8d, 0x0e, 0x95, 0x33, 0xcf, 0x63, 0xb3, 0x85, 0xeb, 0x04,
+	0x9e, 0x8c, 0x2a, 0x19, 0xb5, 0xc8, 0x72, 0x7a, 0x74, 0x23, 0xcb, 0x7b, 0x13, 0x89, 0x73, 0xe8,
+	0x33, 0x28, 0xc5, 0x8d, 0x8f, 0x1e, 0x47, 0x25, 0xda, 0x69, 0xd8, 0xe6, 0x93, 0x14, 0x9a, 0xa8,
+	0x7e, 0x09, 0xb0, 0xed, 0x3c, 0x14, 0x52, 0xec, 0xf5, 0x7b, 0xf3, 0xdd, 0x3d, 0x5c, 0xcd, 0x49,
+	0xd2, 0x37, 0x91, 0xe7, 0xe9, 0x3e, 0x8c, 0x3c, 0xdf, 0x6b, 0x2f, 0x9c, 0x9b, 0x14, 0xe5, 0xff,
+	0xc3, 0xc7, 0x7f, 0x06, 0x00, 0x00, 0xff, 0xff, 0x13, 0x0c, 0x53, 0xfd, 0x45, 0x0b, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -941,6 +1425,10 @@ var _PsWorker_serviceDesc = grpc.ServiceDesc{
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type CoordinatorClient interface {
+	Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error)
+	Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error)
+	Unregister(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*UnregisterResponse, error)
+	PullNodes(ctx context.Context, in *PullNodesRequest, opts ...grpc.CallOption) (*PullNodesResponse, error)
 }
 
 type coordinatorClient struct {
@@ -951,22 +1439,164 @@ func NewCoordinatorClient(cc *grpc.ClientConn) CoordinatorClient {
 	return &coordinatorClient{cc}
 }
 
+func (c *coordinatorClient) Heartbeat(ctx context.Context, in *HeartbeatRequest, opts ...grpc.CallOption) (*HeartbeatResponse, error) {
+	out := new(HeartbeatResponse)
+	err := c.cc.Invoke(ctx, "/rpc.Coordinator/Heartbeat", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinatorClient) Register(ctx context.Context, in *RegisterRequest, opts ...grpc.CallOption) (*RegisterResponse, error) {
+	out := new(RegisterResponse)
+	err := c.cc.Invoke(ctx, "/rpc.Coordinator/Register", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinatorClient) Unregister(ctx context.Context, in *UnregisterRequest, opts ...grpc.CallOption) (*UnregisterResponse, error) {
+	out := new(UnregisterResponse)
+	err := c.cc.Invoke(ctx, "/rpc.Coordinator/Unregister", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *coordinatorClient) PullNodes(ctx context.Context, in *PullNodesRequest, opts ...grpc.CallOption) (*PullNodesResponse, error) {
+	out := new(PullNodesResponse)
+	err := c.cc.Invoke(ctx, "/rpc.Coordinator/PullNodes", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CoordinatorServer is the server API for Coordinator service.
 type CoordinatorServer interface {
+	Heartbeat(context.Context, *HeartbeatRequest) (*HeartbeatResponse, error)
+	Register(context.Context, *RegisterRequest) (*RegisterResponse, error)
+	Unregister(context.Context, *UnregisterRequest) (*UnregisterResponse, error)
+	PullNodes(context.Context, *PullNodesRequest) (*PullNodesResponse, error)
 }
 
 // UnimplementedCoordinatorServer can be embedded to have forward compatible implementations.
 type UnimplementedCoordinatorServer struct {
 }
 
+func (*UnimplementedCoordinatorServer) Heartbeat(ctx context.Context, req *HeartbeatRequest) (*HeartbeatResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Heartbeat not implemented")
+}
+func (*UnimplementedCoordinatorServer) Register(ctx context.Context, req *RegisterRequest) (*RegisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Register not implemented")
+}
+func (*UnimplementedCoordinatorServer) Unregister(ctx context.Context, req *UnregisterRequest) (*UnregisterResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Unregister not implemented")
+}
+func (*UnimplementedCoordinatorServer) PullNodes(ctx context.Context, req *PullNodesRequest) (*PullNodesResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PullNodes not implemented")
+}
+
 func RegisterCoordinatorServer(s *grpc.Server, srv CoordinatorServer) {
 	s.RegisterService(&_Coordinator_serviceDesc, srv)
+}
+
+func _Coordinator_Heartbeat_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(HeartbeatRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinatorServer).Heartbeat(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Coordinator/Heartbeat",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinatorServer).Heartbeat(ctx, req.(*HeartbeatRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Coordinator_Register_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(RegisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinatorServer).Register(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Coordinator/Register",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinatorServer).Register(ctx, req.(*RegisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Coordinator_Unregister_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnregisterRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinatorServer).Unregister(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Coordinator/Unregister",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinatorServer).Unregister(ctx, req.(*UnregisterRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Coordinator_PullNodes_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PullNodesRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CoordinatorServer).PullNodes(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/rpc.Coordinator/PullNodes",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CoordinatorServer).PullNodes(ctx, req.(*PullNodesRequest))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 var _Coordinator_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "rpc.Coordinator",
 	HandlerType: (*CoordinatorServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "go-ps.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "Heartbeat",
+			Handler:    _Coordinator_Heartbeat_Handler,
+		},
+		{
+			MethodName: "Register",
+			Handler:    _Coordinator_Register_Handler,
+		},
+		{
+			MethodName: "Unregister",
+			Handler:    _Coordinator_Unregister_Handler,
+		},
+		{
+			MethodName: "PullNodes",
+			Handler:    _Coordinator_PullNodes_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "go-ps.proto",
 }
