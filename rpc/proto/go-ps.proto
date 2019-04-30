@@ -127,6 +127,14 @@ message RegisterResponse {
     uint32 rank = 2;
     uint32 replicate_factor = 3;
     bool replicate_after_aggregate = 4;
+    enum SyncType {
+        NOT_USED = 0x0;
+        NO_SYNC = 0x1;
+        FULL_SYNC = 0x2;
+        SEMI_SYNC = 0x3;
+    }
+    SyncType sync = 5;
+    uint32 max_sync_tolerate = 6;
 }
 
 message UnregisterRequest {
