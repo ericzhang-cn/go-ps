@@ -125,6 +125,8 @@ message RegisterRequest {
 message RegisterResponse {
     ResponseHeader header = 1;
     uint32 rank = 2;
+    uint32 replicate_factor = 3;
+    bool replicate_after_aggregate = 4;
 }
 
 message UnregisterRequest {
