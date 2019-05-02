@@ -7,7 +7,7 @@ import (
 	"github.com/dgraph-io/badger"
 )
 
-// BadgerStore is kv store implementation using [badger](https://github.com/dgraph-io/badger)
+// BadgerStore is kv store implementation using badger
 type BadgerStore struct {
 	Dir string
 }
@@ -38,7 +38,7 @@ func (bs *BadgerStore) Get(key uint64) (value []byte, err error) {
 		if err != nil {
 			return err
 		}
-		value, err = item.ValueCopy(nil)
+		value, err = item.Value()
 		if err != nil {
 			return err
 		}
@@ -151,10 +151,7 @@ func (bs *BadgerStore) GetRange(begin uint64, end uint64) (values [][]byte, err 
 			if k >= end {
 				break
 			}
-			err = item.Value(func(v []byte) error {
-				values[k-begin] = v
-				return nil
-			})
+			values[k-begin], err = item.Value()
 			if err != nil {
 				return err
 			}
