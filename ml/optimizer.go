@@ -7,4 +7,5 @@ type Optimizer interface {
 
 // SGDOptimizer is stochastic gradient descent optimizer implementation
 type SGDOptimizer struct {
+	loss string
 }

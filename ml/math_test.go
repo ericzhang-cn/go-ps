@@ -13,20 +13,16 @@ func TestSigmoid(t *testing.T) {
 }
 
 func TestDot(t *testing.T) {
-	a := map[uint64]interface{}{
-		1: float32(1),
-		3: float32(3),
-		5: float32(5),
+	a := map[uint64]float64{
+		1: float64(1),
+		3: float64(3),
+		5: float64(5),
 	}
-	b := map[uint64]interface{}{
-		1: float32(1),
-		2: float32(2),
-		3: float32(3),
-		4: float32(4),
+	b := map[uint64]float64{
+		1: float64(1),
+		2: float64(2),
+		3: float64(3),
+		4: float64(4),
 	}
-	r, err := dot(a, b)
-	if err != nil {
-		t.Log(err)
-	}
-	assert.Equal(t, r, float64(10))
+	assert.Equal(t, dot(a, b), float64(10))
 }
