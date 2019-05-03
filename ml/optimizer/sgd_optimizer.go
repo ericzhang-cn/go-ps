@@ -1,15 +1,14 @@
-package ml
+package optimizer
 
-import "errors"
+import (
+	"errors"
 
-// Optimizer is interface for machine learning optimizer
-type Optimizer interface {
-	Optimize(model map[uint64]interface{}, features []map[uint64]float64, labels []float64) (err error)
-}
+	"github.com/ericzhang-cn/go-ps/ml/loss"
+)
 
 // SGDOptimizer is stochastic gradient descent optimizer implementation
 type SGDOptimizer struct {
-	loss    LossFunction
+	loss    loss.Loss
 	lr      float64
 	lambda1 float64
 	lambda2 float64

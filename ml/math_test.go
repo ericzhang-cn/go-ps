@@ -7,9 +7,9 @@ import (
 )
 
 func TestSigmoid(t *testing.T) {
-	assert.Equal(t, sigmoid(0), 0.5)
-	assert.Assert(t, sigmoid(-20) < 1E-5)
-	assert.Assert(t, 1-sigmoid(20) < 1E-5)
+	assert.Equal(t, Sigmoid(0), 0.5)
+	assert.Assert(t, Sigmoid(-20) < 1E-5)
+	assert.Assert(t, 1-Sigmoid(20) < 1E-5)
 }
 
 func TestDot(t *testing.T) {
@@ -24,5 +24,5 @@ func TestDot(t *testing.T) {
 		3: float64(3),
 		4: float64(4),
 	}
-	assert.Equal(t, dot(a, b), float64(10))
+	assert.Equal(t, Dot(a, b), float64(10))
 }

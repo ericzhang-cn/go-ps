@@ -4,13 +4,13 @@ import (
 	"math"
 )
 
-// sigmoid computes sigmoid function value of x
-func sigmoid(x float64) float64 {
+// Sigmoid computes sigmoid function value of x
+func Sigmoid(x float64) float64 {
 	return 1 / (1 + math.Pow(math.E, -x))
 }
 
-// dot computes inner product of two one-dimension vector
-func dot(vec1 map[uint64]float64, vec2 map[uint64]float64) float64 {
+// Dot computes inner product of two one-dimension vector
+func Dot(vec1 map[uint64]float64, vec2 map[uint64]float64) float64 {
 	var r float64
 	if vec1 == nil || vec2 == nil {
 		return r
