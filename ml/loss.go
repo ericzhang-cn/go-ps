@@ -1,6 +1,7 @@
 package ml
 
 import (
+	"errors"
 	"math"
 )
 
@@ -43,4 +44,13 @@ func (lf *LogisticLoss) Gradient(features []map[uint64]float64, labels []float64
 		grads[i] /= n
 	}
 	return grads, nil
+}
+
+func getLossFunction(loss string) (lf LossFunction, err error) {
+	switch loss {
+	case "logistic":
+		return &LogisticLoss{}, nil
+	default:
+		return nil, errors.New("unknown loss function")
+	}
 }
