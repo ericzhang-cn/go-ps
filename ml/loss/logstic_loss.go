@@ -30,8 +30,8 @@ func (lf *LogisticLoss) Gradient(features []map[uint64]float64, labels []float64
 	grads = make(map[uint64]float64)
 	for i, feat := range features {
 		prob := ml.Sigmoid(ml.Dot(feat, weight))
-		for j, x := range feat {
-			g := x * (prob - labels[i])
+		for j := range feat {
+			g := prob - labels[i]
 			grads[j] += g
 		}
 	}

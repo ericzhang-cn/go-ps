@@ -32,7 +32,7 @@ func (bs *BadgerStore) Get(key uint64) (value []byte, err error) {
 	defer db.Close()
 
 	err = db.View(func(txn *badger.Txn) error {
-		buf := make([]byte, 64)
+		buf := make([]byte, 8)
 		binary.PutUvarint(buf, key)
 		item, err := txn.Get(buf)
 		if err != nil {
@@ -60,7 +60,7 @@ func (bs *BadgerStore) Put(key uint64, value []byte) (err error) {
 	defer db.Close()
 
 	err = db.Update(func(txn *badger.Txn) error {
-		buf := make([]byte, 64)
+		buf := make([]byte, 8)
 		binary.PutUvarint(buf, key)
 		err := txn.Set(buf, value)
 		return err
@@ -82,7 +82,7 @@ func (bs *BadgerStore) GetBatch(keys []uint64) (values [][]byte, err error) {
 	err = db.View(func(txn *badger.Txn) error {
 		values = make([][]byte, len(keys))
 		for i, key := range keys {
-			buf := make([]byte, 64)
+			buf := make([]byte, 8)
 			binary.PutUvarint(buf, key)
 			item, err := txn.Get(buf)
 			if err != nil {
@@ -112,7 +112,7 @@ func (bs *BadgerStore) PutBatch(keys []uint64, values [][]byte) (err error) {
 
 	err = db.Update(func(txn *badger.Txn) error {
 		for i, key := range keys {
-			buf := make([]byte, 64)
+			buf := make([]byte, 8)
 			binary.PutUvarint(buf, key)
 			err := txn.Set(buf, values[i])
 			if err != nil {
@@ -143,7 +143,7 @@ func (bs *BadgerStore) GetRange(begin uint64, end uint64) (values [][]byte, err 
 		opts := badger.DefaultIteratorOptions
 		it := txn.NewIterator(opts)
 		defer it.Close()
-		buf := make([]byte, 64)
+		buf := make([]byte, 8)
 		binary.PutUvarint(buf, begin)
 		for it.Seek(buf); it.Valid(); it.Next() {
 			item := it.Item()
