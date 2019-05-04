@@ -12,6 +12,7 @@ type SGDOptimizer struct {
 	lr      float64
 	lambda1 float64
 	lambda2 float64
+	bias    bool
 }
 
 // Optimize update model using stochastic gradient descent
@@ -27,6 +28,12 @@ func (o *SGDOptimizer) Optimize(model map[uint64]interface{}, features []map[uin
 	}
 	if o.loss == nil {
 		return errors.New("loss function not assigned")
+	}
+
+	if o.bias {
+		for i := range features {
+			features[i][0] = 1
+		}
 	}
 
 	w := make(map[uint64]float64)

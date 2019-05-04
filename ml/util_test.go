@@ -13,16 +13,16 @@ func TestSigmoid(t *testing.T) {
 }
 
 func TestDot(t *testing.T) {
-	a := map[uint64]float64{
+	vec1 := map[uint64]float64{
 		1: float64(1),
 		3: float64(3),
 		5: float64(5),
 	}
-	b := map[uint64]float64{
+	vec2 := map[uint64]float64{
 		1: float64(1),
 		2: float64(2),
 		3: float64(3),
 		4: float64(4),
 	}
-	assert.Equal(t, Dot(a, b), float64(10))
+	assert.Equal(t, Dot(vec1, vec2), float64(10))
 }

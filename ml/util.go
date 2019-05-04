@@ -2,6 +2,7 @@ package ml
 
 import (
 	"math"
+	"math/rand"
 )
 
 // Sigmoid computes sigmoid function value of x
@@ -21,4 +22,13 @@ func Dot(vec1 map[uint64]float64, vec2 map[uint64]float64) float64 {
 		}
 	}
 	return r
+}
+
+// Shuffle shuffles features and labels
+func Shuffle(features []map[uint64]float64, labels []float64) {
+	for i := range features {
+		j := rand.Intn(i + 1)
+		features[i], features[j] = features[j], features[i]
+		labels[i], labels[j] = labels[j], labels[i]
+	}
 }
