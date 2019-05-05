@@ -11,7 +11,7 @@ import (
 	"github.com/ericzhang-cn/go-ps/ml/parser"
 )
 
-func TestSGDOptimizer(t *testing.T) {
+func TestFTRLOptimizer(t *testing.T) {
 	path, err := filepath.Abs("../../data/binary_classfication.csv")
 	if err != nil {
 		t.Error(err)
@@ -33,10 +33,11 @@ func TestSGDOptimizer(t *testing.T) {
 	n := len(features)
 
 	model := make(map[uint64]float64)
-	w := make(map[uint64]interface{})
+	params := make(map[uint64]interface{})
 	loss := loss.LogisticLoss{}
-	optimizer := SGDOptimizer{
-		lr:      0.001,
+	optimizer := FTRLOptimizer{
+		alpha:   0.01,
+		beta:    0.01,
 		lambda1: 0,
 		lambda2: 0,
 		loss:    &loss,
@@ -59,12 +60,12 @@ func TestSGDOptimizer(t *testing.T) {
 			}
 			x := features[low:up]
 			y := labels[low:up]
-			err = optimizer.Optimize(w, x, y)
+			err = optimizer.Optimize(params, x, y)
 			if err != nil {
 				t.Error(err)
 			}
-			for k := range w {
-				model[k] = w[k].(float64)
+			for k := range params {
+				model[k] = (params[k].(FTRLParam)).w
 			}
 		}
 	}

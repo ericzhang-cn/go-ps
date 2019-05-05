@@ -5,6 +5,17 @@ import (
 	"math/rand"
 )
 
+// Sgn return sign of x
+func Sgn(x float64) float64 {
+	if x > 0 {
+		return 1
+	} else if x < 0 {
+		return -1
+	} else {
+		return 0
+	}
+}
+
 // Sigmoid computes sigmoid function value of x
 func Sigmoid(x float64) float64 {
 	return 1 / (1 + math.Pow(math.E, -x))
