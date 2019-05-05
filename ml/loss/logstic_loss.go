@@ -10,6 +10,15 @@ import (
 // use negative log-likelihood as loss
 type LogisticLoss struct{}
 
+// Predict computes predict probability
+func (lf *LogisticLoss) Predict(features []map[uint64]float64, weight map[uint64]float64) (preds []float64, err error) {
+	preds = make([]float64, len(features))
+	for i, feat := range features {
+		preds[i] = ml.Sigmoid(ml.Dot(feat, weight))
+	}
+	return preds, nil
+}
+
 // Loss computes logistic loss for data and linear weights w
 func (lf *LogisticLoss) Loss(features []map[uint64]float64, labels []float64, weight map[uint64]float64) (loss float64, err error) {
 	n := float64(len(features))

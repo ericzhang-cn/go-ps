@@ -44,11 +44,9 @@ func (o *FTRLOptimizer) Optimize(model map[uint64]interface{}, features []map[ui
 		}
 	}
 
-	params := make(map[uint64]FTRLParam)
 	w := make(map[uint64]float64)
-	for i, v := range model {
-		params[i] = v.(FTRLParam)
-		w[i] = params[i].w
+	for i := range model {
+		w[i] = model[i].(FTRLParam).w
 	}
 	// gradient of loss function
 	grads, err := o.loss.Gradient(features, labels, w)
@@ -57,11 +55,11 @@ func (o *FTRLOptimizer) Optimize(model map[uint64]interface{}, features []map[ui
 	}
 	// update using FTRL formula
 	for i, g := range grads {
-		p, ok := params[i]
+		_, ok := model[i]
 		if !ok {
-			params[i] = FTRLParam{}
-			p = params[i]
+			model[i] = FTRLParam{}
 		}
+		p := model[i].(FTRLParam)
 		theta := (1 / o.alpha) * (math.Sqrt(p.q+g*g) - math.Sqrt(p.q))
 		p.q += g * g
 		p.z += g - theta*p.w

@@ -51,7 +51,17 @@ func TestSGDOptimizer(t *testing.T) {
 			if err != nil {
 				t.Error(err)
 			}
-			t.Logf("iter: %d, loss: %f", i/batchSize+1, l)
+			preds, err := loss.Predict(features[n-20000:], model)
+			if err != nil {
+				t.Error(err)
+			}
+			labs := make([]float64, len(labels[n-20000:]))
+			copy(labs, labels[n-20000:])
+			auc, err := ml.Auc(labs, preds)
+			if err != nil {
+				t.Error(err)
+			}
+			t.Logf("iter: %d, loss: %f, auc: %f", i/batchSize+1, l, auc)
 			low := i
 			up := i + batchSize
 			if up > n-20000 {

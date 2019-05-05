@@ -63,8 +63,11 @@ func (o *SGDOptimizer) Optimize(model map[uint64]interface{}, features []map[uin
 	}
 	// gradient descent
 	for i := range grads {
-		w[i] -= o.lr * grads[i]
-		model[i] = w[i]
+		_, ok := model[i]
+		if !ok {
+			model[i] = float64(0)
+		}
+		model[i] = model[i].(float64) - o.lr*grads[i]
 	}
 
 	return nil
