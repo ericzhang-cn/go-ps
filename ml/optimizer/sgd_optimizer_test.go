@@ -36,7 +36,7 @@ func TestSGDOptimizer(t *testing.T) {
 	w := make(map[uint64]interface{})
 	loss := loss.LogisticLoss{}
 	optimizer := SGDOptimizer{
-		lr:      0.0002,
+		lr:      0.001,
 		lambda1: 0,
 		lambda2: 0,
 		loss:    &loss,
